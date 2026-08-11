@@ -128,7 +128,7 @@ export function PassRatePair({
           passRate={passRateLastN ?? null}
           passes={passesLastN}
           total={lastN}
-          hint={`Passed runs out of the most recent ${lastN ?? 10} scored runs`}
+          hint={`Passed runs out of the most recent ${lastN ?? 10} counted runs`}
         />
       )}
       <PassRateMeter
@@ -137,7 +137,7 @@ export function PassRatePair({
         passes={passes7d}
         total={runs7d}
         complete={windowComplete7d}
-        hint="Passed runs out of total scored runs in the last 7 days"
+        hint="Passed runs out of total counted runs in the last 7 days"
       />
       <PassRateMeter
         label="30 days"
@@ -145,7 +145,7 @@ export function PassRatePair({
         passes={passes30d}
         total={runs30d}
         complete={windowComplete30d}
-        hint="Passed runs out of total scored runs in the last 30 days"
+        hint="Passed runs out of total counted runs in the last 30 days"
       />
     </div>
   );

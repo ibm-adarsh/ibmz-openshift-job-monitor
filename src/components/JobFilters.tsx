@@ -195,7 +195,7 @@ export function JobFilters({ filters, onChange, availableVersions }: JobFiltersP
             </Tooltip>
           </ToolbarItem>
           <ToolbarItem>
-            <Tooltip content="Show only jobs required for release readiness (e2e, serial, upgrade on supported versions).">
+            <Tooltip content="Show only jobs required for release readiness (e2e, serial, upgrade on non-EOS versions).">
               <Checkbox
                 id="required-only"
                 label="Release gates only"

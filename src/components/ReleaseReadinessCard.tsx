@@ -45,7 +45,7 @@ export function ReleaseReadinessCard({ versions }: ReleaseReadinessCardProps) {
             const meta = SIGNAL_META[signal];
             const required = v.jobs.filter((j) => j.requiredForRelease);
             const rate = weightedPassRate(required, "30d");
-            const tip = `OCP ${v.version} · ${required.length} gates · 30d ${rate.passRate == null ? "—" : `${rate.passRate}% (${rate.passes}/${rate.total})`}`;
+            const tip = `OCP ${v.version} · ${required.length} gate jobs · 30d ${rate.passRate == null ? "—" : `${rate.passRate}% (${rate.passes}/${rate.total})`}`;
 
             return (
               <Tooltip key={v.version} content={tip}>
@@ -85,8 +85,8 @@ export function ReleaseReadinessCard({ versions }: ReleaseReadinessCardProps) {
             color: "var(--pf-t--global--text--color--subtle)",
           }}
         >
-          Blocked = gate job failing / never passed / 3× fails. At risk = flaking or &gt;7d since
-          green.
+          Blocked = a gate job is failing, never passed, or has 3+ failures in a row. At risk =
+          flaky or no pass in over 7 days.
         </div>
       </CardBody>
     </Card>

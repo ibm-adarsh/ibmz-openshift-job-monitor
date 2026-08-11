@@ -199,6 +199,11 @@ export function FleetSummary({
   const running = activeJobs.filter(
     (j) => j.latestOutcome === "running" || j.latestOutcome === "pending",
   ).length;
+  const otherTerminal = activeJobs.filter((j) => {
+    const t = j.latestTerminalOutcome;
+    if (t == null) return false;
+    return t !== "success" && t !== "failure";
+  }).length;
   const incomplete7 = activeJobs.filter(
     (j) => j.dataProvenance === "live" && !j.windowComplete7d && (j.runs7d ?? 0) > 0,
   ).length;
@@ -246,13 +251,13 @@ export function FleetSummary({
                 fontSize: "var(--pf-t--global--font--size--xs)",
               }}
             >
-              Scope: supported OCP versions only (
-              <TermHint meaning="End-of-support OCP versions are excluded so the overview focuses on versions still shipping.">
+              Scope: non-EOS OCP versions only (
+              <TermHint meaning="Older OCP versions that are out of support are hidden here.">
                 EOS excluded
               </TermHint>
               ) · data from{" "}
-              <TermHint meaning="Sippy tracks pass-rate trends across OpenShift CI.">Sippy</TermHint>{" "}
-              + <TermHint meaning="Prow stores individual job runs and logs.">Prow</TermHint> · last
+              <TermHint meaning="Sippy gives job health and pass/fail trends.">Sippy</TermHint>{" "}
+              + <TermHint meaning="Prow gives individual run details and logs.">Prow</TermHint> · last
               refreshed {refreshedAt.toLocaleString()}
               {" · "}
               <span style={{ fontStyle: "italic" }}>hover dotted terms for definitions</span>
@@ -310,44 +315,50 @@ export function FleetSummary({
           <Stat
             value={activeJobs.length}
             label="IBM Z jobs"
-            meaning="Periodic CI jobs for supported (non-EOS) OCP versions in this inventory."
+            meaning="Total IBM Z jobs shown for non-EOS OCP versions."
             variant="accent"
           />
           <Stat
             value={`${withLiveRuns}/${activeJobs.length}`}
             label="Have run history"
-            meaning="Jobs where Sippy/Prow returned at least one completed run."
+            meaning="Jobs where we got at least one finished run."
             variant="teal"
           />
           <Stat
             value={partial}
             label="Sippy stats only"
-            meaning="Sippy knows the job but no individual run rows were returned yet."
+            meaning="Sippy has summary data, but run-by-run history has not loaded yet."
             variant="info"
           />
           <Stat
             value={passing}
             label="Last finished = pass"
-            meaning="Most recent finished (non-running) run was success."
+            meaning="Latest finished run passed."
             variant="success"
           />
           <Stat
             value={failing}
             label="Last finished = fail"
-            meaning="Most recent finished run was a failure. Click to open those jobs."
+            meaning="Latest finished run failed. Click to open those jobs."
             variant={failing > 0 ? "danger" : "default"}
             onClick={failing > 0 ? onShowFailing : undefined}
           />
           <Stat
+            value={otherTerminal}
+            label="Other terminal"
+            meaning="Latest finished run is neither pass nor fail (for example upgrade issue or aborted). This is why Last pass + Last fail may be lower than Have run history."
+            variant="default"
+          />
+          <Stat
             value={flaking}
             label="Streak flaking"
-            meaning={`Last finished run passed but pass rate is ≤${STREAK_FLAKE_PASS_RATE_THRESHOLD}% in the last 7 or 30 days.`}
+            meaning={`Latest run passed, but pass rate is ≤${STREAK_FLAKE_PASS_RATE_THRESHOLD}% in the last 7 or 30 days.`}
             variant="warning"
           />
           <Stat
             value={running}
             label="Running now"
-            meaning="Newest build is still running or pending."
+            meaning="Latest run is still running or waiting to start."
             variant="info"
           />
           <Stat
@@ -358,26 +369,26 @@ export function FleetSummary({
           <Stat
             value={readiness.blocked}
             label="OCP versions blocked"
-            meaning="A required gate job is failing, never passed (per Sippy), or has 3+ fails in a row."
+            meaning="A required gate job is failing, never passed, or has 3+ failures in a row."
             variant={readiness.blocked > 0 ? "danger" : "default"}
           />
           <Stat
             value={readiness["at-risk"]}
             label="OCP versions at risk"
-            meaning="Gate job is flaking, had a recent fail, or no green run in 7+ days."
+            meaning="A gate job is flaky, recently failed, or has not passed in 7+ days."
             variant={readiness["at-risk"] > 0 ? "warning" : "default"}
           />
           <Stat
             value={readiness.ready}
             label="OCP versions ready"
-            meaning="Required gate jobs look healthy for that OCP version."
+            meaning="Required gate jobs look healthy for this OCP version."
             variant={readiness.ready > 0 ? "success" : "default"}
           />
           {incomplete30 > 0 && (
             <Stat
               value={incomplete30}
               label="Partial 30d samples"
-              meaning="These jobs have pass% based on loaded runs that may not fully cover 30 calendar days (shown with ~)."
+              meaning="These pass rates may be incomplete for the full 30-day window (shown with ~)."
               variant="violet"
             />
           )}
@@ -391,27 +402,27 @@ export function FleetSummary({
           }}
         >
           Key terms:{" "}
-          <TermHint meaning="Counts based on each job’s most recent finished run — a snapshot of what is broken right now.">
+          <TermHint meaning="Uses each job's latest finished run.">
             last run
           </TermHint>
           {" · "}
-          <TermHint meaning="Shows Passed/Total % for finished runs in the last 7 or 30 days (run-weighted trend).">
+          <TermHint meaning="Shows Passed/Total % for runs in the last 7 or 30 days.">
             pass rate
           </TermHint>
           {" · "}
-          <TermHint meaning="An OCP version where a required release-gate job is failing, never passed, or has 3+ fails in a row.">
+          <TermHint meaning="An OCP version is blocked when a required gate job is failing, never passed, or has 3+ failures in a row.">
             blocked
           </TermHint>
           {" · "}
-          <TermHint meaning="An OCP version where a gate job is flaking, had a recent fail, or has not been green for 7+ days.">
+          <TermHint meaning="An OCP version is at risk when a gate job is flaky, recently failed, or has not passed for 7+ days.">
             at risk
           </TermHint>
           {" · "}
-          <TermHint meaning="An OCP version whose required gate jobs (e2e, serial, upgrade) look healthy.">
+          <TermHint meaning="An OCP version is ready when required gate jobs are healthy.">
             ready
           </TermHint>
           {" · "}
-          <TermHint meaning="Required jobs used to judge whether a release version is healthy (typically e2e, serial, upgrade).">
+          <TermHint meaning="Gate jobs are the required checks used for release health (usually e2e, serial, and upgrade).">
             gate jobs
           </TermHint>
         </div>
@@ -424,7 +435,7 @@ export function FleetSummary({
           alignItems={{ default: "alignItemsFlexStart" }}
         >
           <div style={{ minWidth: 200, flex: "1 1 220px" }}>
-            <div className="ibmz-section-label">Fleet pass rate (run-weighted)</div>
+            <div className="ibmz-section-label">Fleet pass rate (Passed/Total)</div>
             <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
               <PassRateMeter
                 label="Last 7 days"
@@ -432,7 +443,7 @@ export function FleetSummary({
                 passes={pass7.passes}
                 total={pass7.total}
                 complete={incomplete7 === 0}
-                hint="Passed runs out of total scored runs in the last 7 days across non-EOS jobs (aborted excluded)"
+                hint="Passed runs out of total counted runs in the last 7 days across non-EOS OCP versions (aborted excluded)"
               />
               <PassRateMeter
                 label="Last 30 days"
@@ -440,7 +451,7 @@ export function FleetSummary({
                 passes={pass30.passes}
                 total={pass30.total}
                 complete={incomplete30 === 0}
-                hint="Passed runs out of total scored runs in the last 30 days across non-EOS jobs (aborted excluded)"
+                hint="Passed runs out of total counted runs in the last 30 days across non-EOS OCP versions (aborted excluded)"
               />
             </Flex>
           </div>
@@ -584,11 +595,11 @@ function VersionDetailTable({
               "Jobs",
               "Last pass",
               "Last fail",
-              "Homogeneous 30d",
-              "Heterogeneous 30d",
-              "Upgrade 30d",
-              "7d pass",
-              "30d pass",
+              "Homogeneous 30d (Passed/Total)",
+              "Heterogeneous 30d (Passed/Total)",
+              "Upgrade 30d (Passed/Total)",
+              "7d (Passed/Total)",
+              "30d (Passed/Total)",
             ].map((h) => (
               <th key={h} scope="col">
                 {h}
@@ -633,7 +644,7 @@ function VersionDetailTable({
       </table>
       <div className="ibmz-detail-table-footnote">
         Last pass / Last fail = jobs whose most recent finished run passed or failed. Category
-        columns are 30-day run-weighted pass rates. Heterogeneous = *-x-xz / *-z-xz only.
+        columns and 7d/30d columns show Passed/Total %. Heterogeneous = *-x-xz / *-z-xz only.
       </div>
     </div>
   );

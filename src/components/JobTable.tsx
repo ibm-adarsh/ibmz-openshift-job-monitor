@@ -220,27 +220,27 @@ export function JobTable({
           <Tr>
             <Th screenReaderText="Watchlist" style={{ width: "2.75rem" }} />
             <Th style={{ width: "28%" }}>
-              <Tooltip content="Periodic test name, job type, and category (homogeneous / heterogeneous / upgrade).">
+              <Tooltip content="Job name, job type, and category (homogeneous, heterogeneous, or upgrade).">
                 <span className="ibmz-th-hint">Job</span>
               </Tooltip>
             </Th>
             <Th modifier="nowrap" style={{ width: "11%" }}>
-              <Tooltip content="Latest run outcome. If still running, Prev shows the last finished run.">
+              <Tooltip content="Latest run result. If a run is still in progress, Prev shows the last finished result.">
                 <span className="ibmz-th-hint">Latest Run Status</span>
               </Tooltip>
             </Th>
             <Th modifier="nowrap" style={{ width: "10rem", minWidth: "10rem" }}>
-              <Tooltip content="When this job last completed with an overall success (from run history or Sippy last_pass).">
+              <Tooltip content="When this job last passed (from run history or Sippy last_pass).">
                 <span className="ibmz-th-hint">Last green</span>
               </Tooltip>
             </Th>
             <Th modifier="nowrap" style={{ width: "9rem", minWidth: "8.5rem" }} className="ibmz-col-streak">
-              <Tooltip content="Consecutive non-success finished runs, or never-passed when Sippy has no last_pass.">
+              <Tooltip content="Consecutive failed finished runs, or Never passed when Sippy has no last_pass.">
                 <span className="ibmz-th-hint">Streak</span>
               </Tooltip>
             </Th>
             <Th modifier="nowrap" style={{ width: "12rem", minWidth: "11rem" }}>
-              <Tooltip content="Run-weighted pass rate. Green ≥85%, amber ≥60%, red &lt;60%. Aborted runs excluded.">
+              <Tooltip content="Passed/Total %. Green ≥85%, amber ≥60%, red <60%. Aborted runs are excluded.">
                 <span className="ibmz-th-hint">Pass rate</span>
               </Tooltip>
             </Th>
@@ -248,15 +248,15 @@ export function JobTable({
               <Tooltip
                 content={
                   showLastN
-                    ? "Sparkline of the last 10 runs — oldest left, newest right (outlined bar)"
-                    : "Sparkline of runs in the last 30 days"
+                    ? "Bars for the last 10 runs — oldest on the left, newest on the right (outlined bar = newest)"
+                    : "Bars for runs in the last 30 days"
                 }
               >
                 <span className="ibmz-th-hint">Runs</span>
               </Tooltip>
             </Th>
             <Th modifier="nowrap" style={{ width: "5.5rem" }} className="ibmz-col-links">
-              <Tooltip content="Open Prow history, Sippy runs, or the ci-operator config in GitHub.">
+              <Tooltip content="Open Prow history, Sippy runs, or the job config in GitHub.">
                 <span className="ibmz-th-hint">Links</span>
               </Tooltip>
             </Th>
