@@ -584,8 +584,8 @@ function VersionDetailTable({
               "Jobs",
               "Last pass",
               "Last fail",
-              "Homo 30d",
-              "Hetero 30d",
+              "Homogeneous 30d",
+              "Heterogeneous 30d",
               "Upgrade 30d",
               "7d pass",
               "30d pass",
@@ -608,12 +608,12 @@ function VersionDetailTable({
               r.passRate == null ? "—" : `${r.passRate}% (${r.passes}/${r.total})`;
             return (
               <tr key={v.version}>
-                <td>
+                <td className="ibmz-detail-cell-version">
                   <Button variant="link" isInline onClick={() => onShowVersion(v.version)}>
                     {v.version}
                   </Button>
                 </td>
-                <td>
+                <td className="ibmz-detail-cell-status">
                   <Label color={SIGNAL_COLOR[signal]} isCompact>
                     {SIGNAL_LABEL[signal]}
                   </Label>

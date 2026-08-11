@@ -226,7 +226,7 @@ export function JobTable({
             </Th>
             <Th modifier="nowrap" style={{ width: "11%" }}>
               <Tooltip content="Latest run outcome. If still running, Prev shows the last finished run.">
-                <span className="ibmz-th-hint">Status</span>
+                <span className="ibmz-th-hint">Latest Run Status</span>
               </Tooltip>
             </Th>
             <Th modifier="nowrap" style={{ width: "10rem", minWidth: "10rem" }}>
@@ -324,7 +324,7 @@ export function JobTable({
               </Td>
 
               {/* Status + time + duration */}
-              <Td dataLabel="Status">
+              <Td dataLabel="Latest Run Status">
                 <StatusLabel
                   outcome={statusOutcomeForJob(job)}
                   flakeCount={

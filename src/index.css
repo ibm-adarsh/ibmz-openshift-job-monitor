@@ -1270,6 +1270,8 @@ a:hover {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--pf-t--global--font--size--sm);
+  border: 1px solid var(--ibmz-border-strong);
+  table-layout: auto;
 }
 
 .ibmz-detail-table thead th {
@@ -1284,14 +1286,25 @@ a:hover {
   letter-spacing: 0.04em;
   padding: 10px 10px;
   border-bottom: 1px solid var(--ibmz-border-strong);
+  border-right: 1px solid var(--ibmz-border);
   white-space: nowrap;
   text-align: left;
+}
+
+.ibmz-detail-table thead th:last-child {
+  border-right: 0;
 }
 
 .ibmz-detail-table tbody td {
   padding: 10px 10px;
   border-bottom: 1px solid var(--ibmz-border);
+  border-right: 1px solid var(--ibmz-border);
   vertical-align: middle;
+  white-space: nowrap;
+}
+
+.ibmz-detail-table tbody td:last-child {
+  border-right: 0;
 }
 
 .ibmz-detail-table tbody tr:hover {
@@ -1301,6 +1314,11 @@ a:hover {
 .ibmz-detail-num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ibmz-detail-cell-version,
+.ibmz-detail-cell-status {
   white-space: nowrap;
 }
 

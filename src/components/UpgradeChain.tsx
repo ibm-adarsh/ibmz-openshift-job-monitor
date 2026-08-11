@@ -51,8 +51,9 @@ export function UpgradeChain({ versions, onShowVersion }: UpgradeChainProps) {
   if (active.length < 2) return null;
 
   const hops = active.slice(1).map((v, idx) => {
-    const from = active[idx].version;
+    const fallbackFrom = active[idx].version;
     const upgradeJob = v.jobs.find((j) => j.jobType === "upgrade");
+    const from = upgradeJob?.upgradeFrom ?? fallbackFrom;
     const outcome = upgradeOutcome(upgradeJob);
     const pass = upgradeJob ? weightedPassRate([upgradeJob], "30d") : null;
     return { from, to: v.version, upgradeJob, outcome, pass };
@@ -87,7 +88,7 @@ export function UpgradeChain({ versions, onShowVersion }: UpgradeChainProps) {
             </FlexItem>
           </Flex>
           <Content component="p" className="ibmz-panel-subtitle">
-            One upgrade job per step (for example 4.22 → 4.23). Non-EOS versions only.
+            Upgrade source/target comes from each job's configured path (for example 4.22 → 5.0). Non-EOS versions only.
           </Content>
           <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
             <Label color={failing > 0 ? "red" : "green"} isCompact icon={failing > 0 ? <TimesCircleIcon /> : <CheckCircleIcon />}>
