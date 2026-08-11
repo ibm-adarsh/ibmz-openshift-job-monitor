@@ -71,8 +71,8 @@ export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmap
             <FlexItem>
               <Tooltip
                 content={
-                  "Each tile shows the 30-day pass rate for one job type on one OCP version. " +
-                  "Pass % = green runs ÷ all scored runs (aborted excluded). " +
+                  "Each tile shows 30-day Passed/Total % for one job type on one OCP version. " +
+                  "Total includes success, fail, flake, and upgrade runs (aborted excluded). " +
                   (onFilterByVersionType ? "Click a tile to open those jobs." : "")
                 }
               >
@@ -107,7 +107,7 @@ export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmap
                       <Tooltip
                         content={
                           r.passRate == null
-                            ? `OCP ${v.version} — no scored runs in the last 30 days`
+                            ? `OCP ${v.version} — no counted runs in the last 30 days`
                             : `OCP ${v.version} overall — ${r.passes} of ${r.total} runs passed (${Math.round(r.passRate)}%)`
                         }
                       >
@@ -136,7 +136,7 @@ export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmap
                     const tip = hasRuns
                       ? `${TYPE_LABEL[type]} on OCP ${v.version}: ${rate.passes} passed of ${rate.total} runs (${Math.round(rate.passRate ?? 0)}%) · ${typeJobs.length} job(s)`
                       : hasJobs
-                        ? `${TYPE_LABEL[type]} on OCP ${v.version}: ${typeJobs.length} job(s) but no scored runs in 30 days`
+                        ? `${TYPE_LABEL[type]} on OCP ${v.version}: ${typeJobs.length} job(s) but no counted runs in 30 days`
                         : `No ${TYPE_LABEL[type]} jobs on OCP ${v.version}`;
 
                     return (

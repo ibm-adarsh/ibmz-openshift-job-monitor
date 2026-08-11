@@ -42,7 +42,7 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
             />
           </ToggleGroup>
           <Tooltip
-            content="Only changes the coloured run bars in the Runs column. Seven-day and thirty-day pass rates always count every run fetched from Sippy/Prow (up to 100 per job)."
+            content="Only changes the colored bars in the Runs column. 7-day and 30-day pass rates still use the full Passed/Total data fetched from Sippy/Prow (up to 100 runs per job)."
           >
             <span
               style={{

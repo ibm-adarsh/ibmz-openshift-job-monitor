@@ -395,7 +395,7 @@ export function FleetSummary({
             last run
           </TermHint>
           {" · "}
-          <TermHint meaning="Successful finished runs ÷ all finished runs in the last 7 or 30 days (run-weighted trend).">
+          <TermHint meaning="Shows Passed/Total % for finished runs in the last 7 or 30 days (run-weighted trend).">
             pass rate
           </TermHint>
           {" · "}
@@ -432,7 +432,7 @@ export function FleetSummary({
                 passes={pass7.passes}
                 total={pass7.total}
                 complete={incomplete7 === 0}
-                hint="Successful scored runs ÷ scored runs in the last 7 days across non-EOS jobs (aborted excluded)"
+                hint="Passed runs out of total scored runs in the last 7 days across non-EOS jobs (aborted excluded)"
               />
               <PassRateMeter
                 label="Last 30 days"
@@ -440,7 +440,7 @@ export function FleetSummary({
                 passes={pass30.passes}
                 total={pass30.total}
                 complete={incomplete30 === 0}
-                hint="Successful scored runs ÷ scored runs in the last 30 days across non-EOS jobs (aborted excluded)"
+                hint="Passed runs out of total scored runs in the last 30 days across non-EOS jobs (aborted excluded)"
               />
             </Flex>
           </div>

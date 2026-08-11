@@ -50,7 +50,7 @@ export function PassRateMeter({
     complete
       ? null
       : "Approximate: loaded runs may not cover the full calendar window.",
-    "Pass% = successes ÷ (success+fail+flake+upgrade); aborted runs excluded.",
+    "Shown as Passed/Total %. Total includes success, fail, flake, and upgrade runs; aborted runs are excluded.",
   ]
     .filter(Boolean)
     .join(" · ");
@@ -128,7 +128,7 @@ export function PassRatePair({
           passRate={passRateLastN ?? null}
           passes={passesLastN}
           total={lastN}
-          hint={`Pass rate across the most recent ${lastN ?? 10} scored runs`}
+          hint={`Passed runs out of the most recent ${lastN ?? 10} scored runs`}
         />
       )}
       <PassRateMeter
@@ -137,7 +137,7 @@ export function PassRatePair({
         passes={passes7d}
         total={runs7d}
         complete={windowComplete7d}
-        hint="Successful scored runs ÷ scored runs in the last 7 days"
+        hint="Passed runs out of total scored runs in the last 7 days"
       />
       <PassRateMeter
         label="30 days"
@@ -145,7 +145,7 @@ export function PassRatePair({
         passes={passes30d}
         total={runs30d}
         complete={windowComplete30d}
-        hint="Successful scored runs ÷ scored runs in the last 30 days"
+        hint="Passed runs out of total scored runs in the last 30 days"
       />
     </div>
   );
