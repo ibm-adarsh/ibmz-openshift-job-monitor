@@ -44,6 +44,8 @@ export interface RunHistoryEntry {
   commitSha: string;
   source: "prow" | "sippy";
   rawResult: string;
+  /** Flaky tests in this run (Sippy); overall job may still have passed. */
+  testFlakes?: number;
 }
 
 export interface JobExternalLinks {
@@ -70,6 +72,8 @@ export interface ZJob {
   /** Newest run including running/pending. */
   latestOutcome: JobOutcome;
   latestRunAt: string | null;
+  /** Flaky test count on the newest run (when Sippy overall_result was still success). */
+  latestTestFlakes: number | null;
   /** Newest finished (non-running) outcome — use for “last run passed/failed”. */
   latestTerminalOutcome: JobOutcome | null;
   latestTerminalAt: string | null;
@@ -85,6 +89,7 @@ export interface ZJob {
   passRate7d: number | null;
   passRate30d: number | null;
   flakeRate30d: number | null;
+  flakeRate7d: number | null;
   /** Whether loaded runs appear to cover the full calendar window. */
   windowComplete7d: boolean;
   windowComplete30d: boolean;

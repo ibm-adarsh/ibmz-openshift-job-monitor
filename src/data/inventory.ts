@@ -2,7 +2,7 @@ import inventory from "./job-inventory.json";
 import type { JobCategory, JobType, VersionHealth, VersionSummary, ZJob } from "../types";
 import { buildJobLinks, configGithubUrl } from "../utils/links";
 import { severityRank } from "../utils/format";
-import { weightedPassRate, terminalOutcome, isInFlightOutcome } from "../utils/stats";
+import { weightedPassRate, terminalOutcome, isInFlightOutcome, isStreakFlaking } from "../utils/stats";
 
 interface InventoryRow {
   ocpVersion: string;
@@ -80,6 +80,7 @@ export function loadInventoryJobs(): ZJob[] {
         upgradeFrom: row.upgradeFrom,
         latestOutcome: "no-data" as const,
         latestRunAt: null,
+        latestTestFlakes: null,
         latestTerminalOutcome: null,
         latestTerminalAt: null,
         lastSuccessAt: null,
@@ -92,6 +93,7 @@ export function loadInventoryJobs(): ZJob[] {
         passRate7d: null,
         passRate30d: null,
         flakeRate30d: null,
+        flakeRate7d: null,
         windowComplete7d: false,
         windowComplete30d: false,
         runs7d: null,
@@ -144,7 +146,7 @@ function versionHealth(jobs: ZJob[]): VersionHealth {
   if (
     critical.length === 1 ||
     withData.some(
-      (j) => terminalOutcome(j) === "failure" || terminalOutcome(j) === "flaking",
+      (j) => terminalOutcome(j) === "failure" || isStreakFlaking(j),
     )
   ) {
     return "yellow";
@@ -183,7 +185,7 @@ export function groupByVersion(jobs: ZJob[]): VersionSummary[] {
         jobs: sorted,
         passing: sorted.filter((j) => terminalOutcome(j) === "success").length,
         failing: sorted.filter((j) => terminalOutcome(j) === "failure").length,
-        flaking: sorted.filter((j) => terminalOutcome(j) === "flaking").length,
+        flaking: sorted.filter((j) => isStreakFlaking(j)).length,
         running: sorted.filter((j) => isInFlightOutcome(j.latestOutcome)).length,
         noData: sorted.filter((j) => j.latestOutcome === "no-data").length,
         passRate30d: rates.passRate == null ? null : Math.round(rates.passRate),
@@ -202,7 +204,7 @@ export function summarize(jobs: ZJob[]) {
     total: jobs.length,
     passing: jobs.filter((j) => terminalOutcome(j) === "success").length,
     failing: jobs.filter((j) => terminalOutcome(j) === "failure").length,
-    flaking: jobs.filter((j) => terminalOutcome(j) === "flaking").length,
+    flaking: jobs.filter((j) => isStreakFlaking(j)).length,
     running: jobs.filter((j) => isInFlightOutcome(j.latestOutcome)).length,
     noData: jobs.filter((j) => j.latestOutcome === "no-data").length,
     versionsAtRisk: groupByVersion(jobs).filter((v) => v.health === "red" || v.health === "yellow")

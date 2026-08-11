@@ -25,6 +25,8 @@ import {
   categoryCounts,
   computeReadiness,
   fleetHeadline,
+  isStreakFlaking,
+  STREAK_FLAKE_PASS_RATE_THRESHOLD,
   terminalOutcome,
   weightedPassRate,
   type ReadinessSignal,
@@ -189,7 +191,7 @@ export function FleetSummary({
   const pass30 = useMemo(() => weightedPassRate(activeJobs, "30d"), [activeJobs]);
 
   const failing = activeJobs.filter((j) => j.latestTerminalOutcome === "failure").length;
-  const flaking = activeJobs.filter((j) => j.latestTerminalOutcome === "flaking").length;
+  const flaking = activeJobs.filter((j) => isStreakFlaking(j)).length;
   const passing = activeJobs.filter((j) => j.latestTerminalOutcome === "success").length;
   const noData = activeJobs.filter((j) => j.dataProvenance === "none").length;
   const partial = activeJobs.filter((j) => j.dataProvenance === "partial").length;
@@ -338,8 +340,8 @@ export function FleetSummary({
           />
           <Stat
             value={flaking}
-            label="Last finished = flake"
-            meaning="Most recent finished run succeeded overall but had flaking tests."
+            label="Streak flaking"
+            meaning={`Last finished run passed but pass rate is ≤${STREAK_FLAKE_PASS_RATE_THRESHOLD}% in the last 7 or 30 days.`}
             variant="warning"
           />
           <Stat

@@ -55,7 +55,8 @@ function flakeRate(runs: RunHistoryEntry[], sinceMs: number): number | null {
     return isScored(r.outcome);
   });
   if (!scored.length) return null;
-  return Math.round((scored.filter((r) => r.outcome === "flaking").length / scored.length) * 1000) / 10;
+  const flaky = scored.filter((r) => (r.testFlakes ?? 0) > 0 || r.outcome === "flaking").length;
+  return Math.round((flaky / scored.length) * 1000) / 10;
 }
 
 function consecutiveFailures(runs: RunHistoryEntry[]): number {
@@ -63,8 +64,11 @@ function consecutiveFailures(runs: RunHistoryEntry[]): number {
   for (const run of runs) {
     if (isInFlight(run.outcome)) continue;
     if (run.outcome === "success") break;
-    if (["failure", "flaking", "aborted", "upgrade", "unknown"].includes(run.outcome)) n += 1;
-    else break;
+    if (run.outcome === "failure" || run.outcome === "upgrade" || run.outcome === "aborted") {
+      n += 1;
+    } else {
+      break;
+    }
   }
   return n;
 }
@@ -109,6 +113,7 @@ function fromSippy(runs: SippyRunRow[], periodicName: string): RunHistoryEntry[]
       commitSha: "",
       source: "sippy" as const,
       rawResult: r.overall_result,
+      testFlakes: r.test_flakes ?? 0,
     };
   });
 }
@@ -233,7 +238,9 @@ export async function hydrateJobsLive(
     const latestTerminal = fullHistory.find((h) => !isInFlight(h.outcome));
 
     const historySuccessAt =
-      fullHistory.find((h) => h.outcome === "success")?.startedAt ?? null;
+      fullHistory.find(
+        (h) => h.outcome === "success" || h.rawResult === "S" || h.rawResult === "s",
+      )?.startedAt ?? null;
     const sippyPass = sippy?.last_pass || null;
     let lastSuccessAt: string | null = historySuccessAt;
     let lastSuccessSource: LastSuccessSource = historySuccessAt ? "history" : null;
@@ -255,10 +262,38 @@ export async function hydrateJobsLive(
     const hasRuns = fullHistory.length > 0;
     const hasSippy = !!sippy;
 
+    const pass7d =
+      s7.passRate ??
+      (hasSippy && sippy?.current_runs && sippy.current_pass_percentage != null
+        ? Math.round(sippy.current_pass_percentage * 10) / 10
+        : null);
+    const runs7dVal =
+      s7.total ??
+      (hasSippy && sippy?.current_runs != null ? sippy.current_runs : null);
+    const passes7dVal =
+      s7.passes ??
+      (runs7dVal != null && pass7d != null
+        ? Math.round((runs7dVal * pass7d) / 100)
+        : null);
+    const pass30d =
+      s30.passRate ??
+      (hasSippy && sippy?.previous_runs && sippy.previous_pass_percentage != null
+        ? Math.round(sippy.previous_pass_percentage * 10) / 10
+        : null);
+    const runs30dVal =
+      s30.total ??
+      (hasSippy && sippy?.previous_runs != null ? sippy.previous_runs : null);
+    const passes30dVal =
+      s30.passes ??
+      (runs30dVal != null && pass30d != null
+        ? Math.round((runs30dVal * pass30d) / 100)
+        : null);
+
     return {
       ...job,
       latestOutcome: latest?.outcome ?? (hasSippy ? "unknown" : "no-data"),
       latestRunAt: latest?.startedAt ?? null,
+      latestTestFlakes: latest?.testFlakes ?? null,
       latestTerminalOutcome: latestTerminal?.outcome ?? null,
       latestTerminalAt: latestTerminal?.startedAt ?? null,
       lastSuccessAt,
@@ -269,15 +304,16 @@ export async function hydrateJobsLive(
       daysSinceLastSuccess,
       neverPassed,
       noGreenInLoadedRuns,
-      passRate7d: s7.passRate,
-      passRate30d: s30.passRate,
+      passRate7d: pass7d,
+      passRate30d: pass30d,
       flakeRate30d: flakeRate(fullHistory, now - 30 * DAY),
+      flakeRate7d: flakeRate(fullHistory, now - 7 * DAY),
       windowComplete7d: windowLooksComplete(fullHistory, now - 7 * DAY, fullHistory.length),
       windowComplete30d: windowLooksComplete(fullHistory, now - 30 * DAY, fullHistory.length),
-      runs7d: s7.total,
-      passes7d: s7.passes,
-      runs30d: s30.total,
-      passes30d: s30.passes,
+      runs7d: runs7dVal,
+      passes7d: passes7dVal,
+      runs30d: runs30dVal,
+      passes30d: passes30dVal,
       passRateLastN: sN.passRate,
       passesLastN: sN.passes,
       lastN: sN.total,

@@ -43,26 +43,48 @@ export interface SippyRunsResponse {
 
 export function mapSippyResult(code: string, run?: SippyRunRow): JobOutcome {
   const c = (code || "").trim();
-  // Sippy overall_result: S=success, F/f=fail, A=aborted, R=running, U=upgrade failure, I/N=install/infra-ish
+  // Sippy overall_result: S=success, F/f=fail, A=aborted, R=running, U=upgrade failure, I/N/n=install/infra-ish
   if (c === "R") return "running";
   if (c === "A" || c.toLowerCase() === "aborted") return "aborted";
   if (c === "U") return "upgrade";
-  // Flakes: succeeded overall but some tests flaked — check before treating as clean success
-  if ((c === "S" || run?.succeeded) && (run?.test_flakes ?? 0) > 0) return "flaking";
-  if (c === "S") return "success";
+  // Overall success (S) = pass for status/streak/pass-rate even when individual tests flaked.
+  if (c === "S" || run?.succeeded) return "success";
   if (["F", "f", "I", "N", "n"].includes(c)) return "failure";
-  if (run?.succeeded) return "success";
   if (run?.failed || run?.infrastructure_failure) return "failure";
   return "unknown";
 }
 
+/** Runs with flaky tests but overall Sippy success — used for flake-rate metrics only. */
+export function sippyRunHadFlakes(run?: SippyRunRow): boolean {
+  return (run?.test_flakes ?? 0) > 0;
+}
+
+async function fetchJsonWithRetry<T>(
+  url: string,
+  signal?: AbortSignal,
+  attempts = 3,
+): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(url, { signal });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return (await res.json()) as T;
+    } catch (e) {
+      lastErr = e;
+      if (i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, 400 * (i + 1)));
+      }
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
+}
+
 export async function fetchSippyJobs(release: string, signal?: AbortSignal): Promise<SippyJobRow[]> {
   const url = `${sippyBase()}/api/jobs?release=${encodeURIComponent(release)}`;
-  const res = await fetch(url, { signal });
-  if (!res.ok) {
-    throw new Error(`Sippy jobs ${release}: HTTP ${res.status}`);
-  }
-  const data: unknown = await res.json();
+  const data = await fetchJsonWithRetry<unknown>(url, signal);
   if (!Array.isArray(data)) {
     throw new Error(`Sippy jobs ${release}: unexpected payload`);
   }
@@ -86,11 +108,7 @@ export async function fetchSippyRuns(
     sort: "desc",
   });
   const url = `${sippyBase()}/api/jobs/runs?${params.toString()}`;
-  const res = await fetch(url, { signal });
-  if (!res.ok) {
-    throw new Error(`Sippy runs ${jobName}: HTTP ${res.status}`);
-  }
-  const data = (await res.json()) as SippyRunsResponse;
+  const data = await fetchJsonWithRetry<SippyRunsResponse>(url, signal);
   return Array.isArray(data.rows) ? data.rows : [];
 }
 

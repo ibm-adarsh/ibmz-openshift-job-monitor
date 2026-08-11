@@ -1,4 +1,4 @@
-import { Label } from "@patternfly/react-core";
+import { Label, Tooltip } from "@patternfly/react-core";
 import {
   CheckCircleIcon,
   TimesCircleIcon,
@@ -41,10 +41,20 @@ if (typeof document !== "undefined" && !document.getElementById("pf-status-pulse
   document.head.appendChild(s);
 }
 
-export function StatusLabel({ outcome }: { outcome: JobOutcome }) {
+export function StatusLabel({
+  outcome,
+  flakeCount,
+}: {
+  outcome: JobOutcome;
+  flakeCount?: number | null;
+}) {
   const meta = META[outcome];
   const isLive = outcome === "running" || outcome === "pending";
-  return (
+  const flakeNote =
+    outcome === "success" && flakeCount != null && flakeCount > 0
+      ? `Overall pass (Sippy S) with ${flakeCount} flaky tests in this run.`
+      : undefined;
+  const label = (
     <Label
       color={meta.color}
       isCompact
@@ -53,5 +63,11 @@ export function StatusLabel({ outcome }: { outcome: JobOutcome }) {
     >
       {meta.text}
     </Label>
+  );
+  if (!flakeNote) return label;
+  return (
+    <Tooltip content={flakeNote}>
+      <span style={{ display: "inline-flex" }}>{label}</span>
+    </Tooltip>
   );
 }

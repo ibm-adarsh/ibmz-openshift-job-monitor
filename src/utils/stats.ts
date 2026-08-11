@@ -1,8 +1,26 @@
 import type { JobOutcome, ZJob, VersionSummary } from "../types";
 
+export const STREAK_FLAKE_PASS_RATE_THRESHOLD = 25;
+
 /** Last finished outcome — use for pass/fail counts and readiness (not in-flight runs). */
 export function terminalOutcome(job: ZJob): JobOutcome {
   return job.latestTerminalOutcome ?? job.latestOutcome;
+}
+
+/** Status column: in-flight shows Running/Pending; otherwise last finished outcome. */
+export function statusOutcomeForJob(job: ZJob): JobOutcome {
+  if (isInFlightOutcome(job.latestOutcome)) return job.latestOutcome;
+  return terminalOutcome(job);
+}
+
+/**
+ * Flaking under Streak: last finished run passed but pass rate in 7d or 30d is ≤25%.
+ */
+export function isStreakFlaking(job: ZJob): boolean {
+  if (terminalOutcome(job) !== "success") return false;
+  const lowPass = (rate: number | null, total: number | null) =>
+    rate != null && total != null && total > 0 && rate <= STREAK_FLAKE_PASS_RATE_THRESHOLD;
+  return lowPass(job.passRate7d, job.runs7d) || lowPass(job.passRate30d, job.runs30d);
 }
 
 export function isInFlightOutcome(outcome: JobOutcome): boolean {
@@ -72,7 +90,7 @@ export function computeReadiness(v: VersionSummary): ReadinessSignal {
   if (blocked.length > 0) return "blocked";
   const atRisk = required.filter(
     (j) =>
-      terminalOutcome(j) === "flaking" ||
+      isStreakFlaking(j) ||
       j.consecutiveFailures >= 1 ||
       (j.daysSinceLastSuccess != null && j.daysSinceLastSuccess > 7),
   );

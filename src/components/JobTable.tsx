@@ -13,7 +13,7 @@ import { PassRatePair } from "./PassRatePair";
 import { formatRelative } from "../utils/format";
 import { isHeterogeneousJobName } from "../data/inventory";
 import { applyHistoryWindow } from "../data/hydrateLive";
-import { displayOutcomeForRow } from "../utils/stats";
+import { displayOutcomeForRow, statusOutcomeForJob, isStreakFlaking, STREAK_FLAKE_PASS_RATE_THRESHOLD } from "../utils/stats";
 
 const CATEGORY_LABEL: Record<ZJob["category"], string> = {
   homogeneous: "Homogeneous",
@@ -111,6 +111,22 @@ function ConsecutiveBadge({ job }: { job: ZJob }) {
       <Label color="orange" isCompact>
         {job.consecutiveFailures}× fail
       </Label>
+    );
+  }
+  const flaking = isStreakFlaking(job);
+  if (flaking) {
+    const tip =
+      `Last finished run passed, but pass rate is ≤${STREAK_FLAKE_PASS_RATE_THRESHOLD}% in the last 7 or 30 days ` +
+      `(7d: ${job.passRate7d ?? "—"}% · 30d: ${job.passRate30d ?? "—"}%).`;
+    return (
+      <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
+        <Label color="green" isCompact>OK</Label>
+        <Tooltip content={tip}>
+          <Label color="orange" isCompact style={{ cursor: "help" }}>
+            Flaking
+          </Label>
+        </Tooltip>
+      </Flex>
     );
   }
   return (
@@ -309,7 +325,12 @@ export function JobTable({
 
               {/* Status + time + duration */}
               <Td dataLabel="Status">
-                <StatusLabel outcome={job.latestOutcome} />
+                <StatusLabel
+                  outcome={statusOutcomeForJob(job)}
+                  flakeCount={
+                    statusOutcomeForJob(job) === "success" ? job.latestTestFlakes : undefined
+                  }
+                />
                 {(job.latestOutcome === "running" || job.latestOutcome === "pending") &&
                   job.latestTerminalOutcome && (
                     <div style={{ marginTop: 2 }}>

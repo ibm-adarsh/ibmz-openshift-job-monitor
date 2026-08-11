@@ -30,6 +30,7 @@ import { StatusLabel } from "./StatusLabel";
 import { RunSparkline } from "./RunSparkline";
 import { PassRatePair } from "./PassRatePair";
 import { formatAbsolute, formatRelative } from "../utils/format";
+import { isStreakFlaking, statusOutcomeForJob } from "../utils/stats";
 
 function CopyButton({ text, label }: { text: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -99,7 +100,7 @@ export function JobDetailDrawer({ job, onClose, children }: JobDetailDrawerProps
           {/* Status labels */}
           <FlexItem>
             <LabelGroup>
-              <StatusLabel outcome={job.latestOutcome} />
+              <StatusLabel outcome={statusOutcomeForJob(job)} />
               <Label isCompact color="blue">
                 OCP {job.ocpVersion}
               </Label>
@@ -194,7 +195,9 @@ export function JobDetailDrawer({ job, onClose, children }: JobDetailDrawerProps
                 <DescriptionListDescription>
                   {job.consecutiveFailures > 0
                     ? `${job.consecutiveFailures}× consecutive failures`
-                    : "No consecutive failures"}
+                    : isStreakFlaking(job)
+                      ? "OK · Flaking (≤25% pass in 7d or 30d)"
+                      : "OK — no consecutive failures"}
                 </DescriptionListDescription>
               </DescriptionListGroup>
               <DescriptionListGroup>
