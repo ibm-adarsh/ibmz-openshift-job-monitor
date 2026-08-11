@@ -105,7 +105,46 @@ Jobs from `openshift-multiarch-main__nightly-*.yaml` targeting **s390x / multi-z
 
 ```bash
 npm run build
-# Serve dist/ with any static host; Prow proxy needed for full history in prod
+# Static files in dist/
+```
+
+---
+
+## Host on GitHub Pages (public URL, live Sippy data)
+
+The dashboard can run as a **static site** on GitHub Pages. Anyone with the URL can use it — no server required.
+
+### How live data works
+
+| Source | On GitHub Pages |
+|--------|-----------------|
+| **Sippy** (pass rates, run history, job stats) | Works — browser calls `sippy.dptools.openshift.org` directly (CORS enabled) |
+| **Prow** HTML history | Not used in production builds (only local dev via Vite proxy) |
+| **Job inventory** | Baked into the site at build time; CI refreshes it from `openshift/release` main on each deploy |
+
+### One-time setup
+
+1. Open **https://github.com/ibm-adarsh/ibmz-openshift-job-monitor/settings/pages**
+2. Under **Build and deployment**, set **Source** to **GitHub Actions** (not “Deploy from branch”).
+
+### Deploy
+
+Every push to `main` runs `.github/workflows/deploy-pages.yml`:
+
+- Clones `openshift/release` (main)
+- Regenerates `job-inventory.json`
+- Builds with base path `/ibmz-openshift-job-monitor/`
+- Publishes to GitHub Pages
+
+**Site URL:** **https://ibm-adarsh.github.io/ibmz-openshift-job-monitor/**
+
+Manual redeploy: **Actions** → **Deploy GitHub Pages** → **Run workflow**.
+
+### Local build matching Pages
+
+```bash
+VITE_BASE_PATH=/ibmz-openshift-job-monitor/ npm run build
+npx vite preview --base /ibmz-openshift-job-monitor/
 ```
 
 ---
@@ -117,6 +156,7 @@ ibmz-openshift-job-monitor/
   scripts/
     setup.sh
     regenerate-inventory.py
+  .github/workflows/deploy-pages.yml
   src/
     data/job-inventory.json   # generated — commit after sync
     components/               # React + PatternFly UI
@@ -129,3 +169,4 @@ ibmz-openshift-job-monitor/
 - [openshift/release](https://github.com/openshift/release) — CI job definitions
 - [Sippy](https://sippy.dptools.openshift.org/) — OpenShift CI analytics
 - [Prow](https://prow.ci.openshift.org/) — job run logs
+- [Live site](https://ibm-adarsh.github.io/ibmz-openshift-job-monitor/) — GitHub Pages (after Pages is enabled)

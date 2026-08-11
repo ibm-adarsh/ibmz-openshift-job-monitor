@@ -1,8 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// Proxies avoid browser CORS for Prow HTML; Sippy already sends ACAO: *.
+// GitHub Pages project site: https://<user>.github.io/ibmz-openshift-job-monitor/
+const base = process.env.VITE_BASE_PATH ?? "/";
+
 export default defineConfig({
+  base,
   plugins: [react()],
   server: {
     proxy: {

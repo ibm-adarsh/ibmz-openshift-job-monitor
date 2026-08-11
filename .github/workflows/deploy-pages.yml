@@ -1,0 +1,65 @@
+# Build and publish to GitHub Pages.
+# Live CI data is fetched in the browser from Sippy (CORS allowed).
+# Job list is refreshed from openshift/release main on each deploy.
+
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monitor
+        uses: actions/checkout@v4
+
+      - name: Checkout openshift/release (main)
+        uses: actions/checkout@v4
+        with:
+          repository: openshift/release
+          ref: main
+          path: release
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install and sync job inventory
+        run: |
+          npm ci
+          RELEASE_ROOT="$GITHUB_WORKSPACE/release" npm run inventory
+
+      - name: Build for GitHub Pages
+        env:
+          VITE_BASE_PATH: /ibmz-openshift-job-monitor/
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
