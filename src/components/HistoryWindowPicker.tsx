@@ -18,25 +18,15 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
       flexWrap={{ default: "wrap" }}
       gap={{ default: "gapMd" }}
       style={{
-        padding: "8px 12px",
-        background: "var(--ibmz-surface)",
-        borderRadius: 6,
-        border: "1px solid var(--ibmz-border)",
+        padding: "10px 14px",
+        borderRadius: 10,
       }}
       className="ibmz-history-strip"
     >
       {/* Window toggle */}
       <FlexItem>
         <Flex alignItems={{ default: "alignItemsCenter" }} gap={{ default: "gapSm" }}>
-          <span
-            style={{
-              fontSize: "var(--pf-t--global--font--size--sm)",
-              color: "var(--pf-t--global--text--color--subtle)",
-              fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-            }}
-          >
-            Runs column:
-          </span>
+          <span className="ibmz-history-strip-label">Runs column:</span>
           <ToggleGroup aria-label="History window" isCompact>
             <ToggleGroupItem
               text="Last 10 Runs"
@@ -70,13 +60,7 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
 
       {/* Divider */}
       <FlexItem>
-        <div
-          style={{
-            width: 1,
-            height: 20,
-            background: "var(--pf-t--global--border--color--default)",
-          }}
-        />
+        <div className="ibmz-history-divider" />
       </FlexItem>
 
       {/* Legend */}

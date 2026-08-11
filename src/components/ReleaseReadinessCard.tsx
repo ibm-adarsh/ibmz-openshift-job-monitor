@@ -34,8 +34,10 @@ export function ReleaseReadinessCard({ versions }: ReleaseReadinessCardProps) {
   if (!active.length) return null;
 
   return (
-    <Card isCompact>
-      <CardTitle>Release readiness (gate jobs · non-EOS)</CardTitle>
+    <Card isCompact className="ibmz-panel-card">
+      <CardTitle className="ibmz-panel-title ibmz-panel-heading" style={{ padding: "1rem 1.25rem" }}>
+        Release readiness (gate jobs · non-EOS)
+      </CardTitle>
       <CardBody>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {active.map((v) => {

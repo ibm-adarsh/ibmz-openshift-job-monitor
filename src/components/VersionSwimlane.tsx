@@ -88,7 +88,7 @@ export function VersionSwimlane({
   );
 
   return (
-    <div className="ibmz-version-lane">
+    <div className={`ibmz-version-lane ibmz-version-lane--${summary.health}`}>
       <ExpandableSection
         toggleContent={toggleContent}
         isExpanded={expanded}
@@ -104,7 +104,6 @@ export function VersionSwimlane({
           watchlist={watchlist}
           onToggleWatch={onToggleWatch}
           historyWindow={historyWindow}
-          stickyHeader
         />
       </ExpandableSection>
     </div>

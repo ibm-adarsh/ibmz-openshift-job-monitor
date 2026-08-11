@@ -65,12 +65,51 @@ const SIGNAL_LABEL: Record<ReadinessSignal, string> = {
   "no-data": "No data",
 };
 
-const HEADLINE_COLOR = {
-  success: "var(--ibmz-success-strong)",
-  warning: "var(--ibmz-warning-strong)",
-  danger: "var(--ibmz-danger-strong)",
-  unknown: "var(--ibmz-muted)",
+const HEADLINE_CLASS = {
+  success: "ibmz-fleet-headline--success",
+  warning: "ibmz-fleet-headline--warning",
+  danger: "ibmz-fleet-headline--danger",
+  unknown: "ibmz-fleet-headline--unknown",
 } as const;
+
+type StatVariant =
+  | "accent"
+  | "success"
+  | "danger"
+  | "warning"
+  | "info"
+  | "violet"
+  | "teal"
+  | "default";
+
+function Stat({
+  value,
+  label,
+  meaning,
+  variant = "default",
+  onClick,
+}: {
+  value: string | number;
+  label: string;
+  meaning: string;
+  variant?: StatVariant;
+  onClick?: () => void;
+}) {
+  const toneClass = variant === "default" ? "" : `ibmz-stat-card--${variant}`;
+  return (
+    <Tooltip content={meaning}>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={!onClick}
+        className={`ibmz-stat-card ${toneClass}${onClick ? " ibmz-stat-card--clickable" : ""}`}
+      >
+        <div className="ibmz-stat-value">{value}</div>
+        <div className="ibmz-stat-label">{label}</div>
+      </button>
+    </Tooltip>
+  );
+}
 
 function exportCsv(jobs: ZJob[]) {
   const headers = [
@@ -115,67 +154,6 @@ function exportCsv(jobs: ZJob[]) {
   a.download = `ibmz-openshift-jobs-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-function Stat({
-  value,
-  label,
-  meaning,
-  tone,
-  onClick,
-}: {
-  value: string | number;
-  label: string;
-  meaning: string;
-  tone?: "danger" | "success";
-  onClick?: () => void;
-}) {
-  return (
-    <Tooltip content={meaning}>
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={!onClick}
-        style={{
-          background: "var(--ibmz-surface)",
-          border: "1px solid var(--ibmz-border)",
-          borderRadius: 8,
-          padding: "10px 12px",
-          textAlign: "left",
-          cursor: onClick ? "pointer" : "help",
-          width: "100%",
-        }}
-        className="ibmz-stat-card"
-      >
-        <div
-          style={{
-            fontSize: "var(--pf-t--global--font--size--2xl)",
-            fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-            color:
-              tone === "danger"
-                ? "var(--ibmz-danger-strong)"
-                : tone === "success"
-                  ? "var(--ibmz-success-strong)"
-                  : undefined,
-            lineHeight: 1.1,
-          }}
-        >
-          {value}
-        </div>
-        <div
-          style={{
-            fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-            fontSize: "var(--pf-t--global--font--size--sm)",
-            marginTop: 4,
-            borderBottom: "1px dotted var(--pf-t--global--border--color--default)",
-            display: "inline-block",
-          }}
-        >
-          {label}
-        </div>
-      </button>
-    </Tooltip>
-  );
 }
 
 /** Concise fleet overview; expand for matrices and per-version detail. */
@@ -233,7 +211,7 @@ export function FleetSummary({
   }, [activeVersions]);
 
   return (
-    <Card>
+    <Card className="ibmz-panel-card ibmz-fleet-card">
       <CardBody>
         <Flex
           justifyContent={{ default: "justifyContentSpaceBetween" }}
@@ -245,13 +223,7 @@ export function FleetSummary({
             <Title headingLevel="h2" size="lg" style={{ marginBottom: 4 }}>
               Fleet overview
             </Title>
-            <div
-              style={{
-                fontSize: "var(--pf-t--global--font--size--md)",
-                fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-                color: HEADLINE_COLOR[headline.tone],
-              }}
-            >
+            <div className={`ibmz-fleet-headline ${HEADLINE_CLASS[headline.tone]}`}>
               {headline.text}
             </div>
             <div
@@ -337,39 +309,44 @@ export function FleetSummary({
             value={activeJobs.length}
             label="IBM Z jobs"
             meaning="Periodic CI jobs for supported (non-EOS) OCP versions in this inventory."
+            variant="accent"
           />
           <Stat
             value={`${withLiveRuns}/${activeJobs.length}`}
             label="Have run history"
             meaning="Jobs where Sippy/Prow returned at least one completed run."
+            variant="teal"
           />
           <Stat
             value={partial}
             label="Sippy stats only"
             meaning="Sippy knows the job but no individual run rows were returned yet."
+            variant="info"
           />
           <Stat
             value={passing}
             label="Last finished = pass"
             meaning="Most recent finished (non-running) run was success."
-            tone="success"
+            variant="success"
           />
           <Stat
             value={failing}
             label="Last finished = fail"
             meaning="Most recent finished run was a failure. Click to open those jobs."
-            tone={failing > 0 ? "danger" : undefined}
+            variant={failing > 0 ? "danger" : "default"}
             onClick={failing > 0 ? onShowFailing : undefined}
           />
           <Stat
             value={flaking}
             label="Last finished = flake"
             meaning="Most recent finished run succeeded overall but had flaking tests."
+            variant="warning"
           />
           <Stat
             value={running}
             label="Running now"
             meaning="Newest build is still running or pending."
+            variant="info"
           />
           <Stat
             value={noData}
@@ -380,24 +357,26 @@ export function FleetSummary({
             value={readiness.blocked}
             label="OCP versions blocked"
             meaning="A required gate job is failing, never passed (per Sippy), or has 3+ fails in a row."
-            tone={readiness.blocked > 0 ? "danger" : undefined}
+            variant={readiness.blocked > 0 ? "danger" : "default"}
           />
           <Stat
             value={readiness["at-risk"]}
             label="OCP versions at risk"
             meaning="Gate job is flaking, had a recent fail, or no green run in 7+ days."
+            variant={readiness["at-risk"] > 0 ? "warning" : "default"}
           />
           <Stat
             value={readiness.ready}
             label="OCP versions ready"
             meaning="Required gate jobs look healthy for that OCP version."
-            tone={readiness.ready > 0 ? "success" : undefined}
+            variant={readiness.ready > 0 ? "success" : "default"}
           />
           {incomplete30 > 0 && (
             <Stat
               value={incomplete30}
               label="Partial 30d samples"
               meaning="These jobs have pass% based on loaded runs that may not fully cover 30 calendar days (shown with ~)."
+              variant="violet"
             />
           )}
         </div>
@@ -443,18 +422,7 @@ export function FleetSummary({
           alignItems={{ default: "alignItemsFlexStart" }}
         >
           <div style={{ minWidth: 200, flex: "1 1 220px" }}>
-            <div
-              style={{
-                fontSize: "var(--pf-t--global--font--size--xs)",
-                fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-                textTransform: "uppercase",
-                letterSpacing: "0.03em",
-                color: "var(--pf-t--global--text--color--subtle)",
-                marginBottom: 10,
-              }}
-            >
-              Fleet pass rate (run-weighted)
-            </div>
+            <div className="ibmz-section-label">Fleet pass rate (run-weighted)</div>
             <Flex direction={{ default: "column" }} gap={{ default: "gapMd" }}>
               <PassRateMeter
                 label="Last 7 days"
@@ -476,53 +444,34 @@ export function FleetSummary({
           </div>
 
           <div style={{ minWidth: 200, flex: "1 1 220px" }}>
-            <div
-              style={{
-                fontSize: "var(--pf-t--global--font--size--xs)",
-                fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-                textTransform: "uppercase",
-                letterSpacing: "0.03em",
-                color: "var(--pf-t--global--text--color--subtle)",
-                marginBottom: 10,
-              }}
-            >
-              Job family
-            </div>
+            <div className="ibmz-section-label">Job family</div>
             <Flex direction={{ default: "column" }} gap={{ default: "gapSm" }}>
               <FamilyRow
                 label="Homogeneous"
                 count={cats.homogeneous}
                 tip="Single-arch Z (s390x, multi-z-z, VPN, …)"
                 onClick={() => onShowCategory("homogeneous")}
+                family="homo"
               />
               <FamilyRow
                 label="Heterogeneous"
                 count={cats.heterogeneous}
                 tip="Only *-x-xz and *-z-xz"
                 onClick={() => onShowCategory("heterogeneous")}
+                family="hetero"
               />
               <FamilyRow
                 label="Upgrade"
                 count={cats.upgrade}
                 tip="n→n+1 upgrade periodics"
                 onClick={() => onShowCategory("upgrade")}
+                family="upgrade"
               />
             </Flex>
           </div>
 
           <div style={{ minWidth: 260, flex: "2 1 280px" }}>
-            <div
-              style={{
-                fontSize: "var(--pf-t--global--font--size--xs)",
-                fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-                textTransform: "uppercase",
-                letterSpacing: "0.03em",
-                color: "var(--pf-t--global--text--color--subtle)",
-                marginBottom: 10,
-              }}
-            >
-              Versions (click to open Jobs)
-            </div>
+            <div className="ibmz-section-label">Versions (click to open Jobs)</div>
             <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
               {activeVersions.map((v) => {
                 const signal = computeReadiness(v);
@@ -536,6 +485,7 @@ export function FleetSummary({
                       variant="control"
                       size="sm"
                       onClick={() => onShowVersion(v.version)}
+                      className="ibmz-version-chip"
                       style={{ paddingInline: 8 }}
                     >
                       <Flex
@@ -587,30 +537,20 @@ function FamilyRow({
   count,
   tip,
   onClick,
+  family,
 }: {
   label: string;
   count: number;
   tip: string;
   onClick: () => void;
+  family: "homo" | "hetero" | "upgrade";
 }) {
   return (
     <Tooltip content={`${tip} · click to filter Jobs`}>
       <button
         type="button"
         onClick={onClick}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 16,
-          width: "100%",
-          maxWidth: 280,
-          padding: "6px 10px",
-          borderRadius: 4,
-          border: "1px solid var(--ibmz-border)",
-          background: "var(--ibmz-surface)",
-          cursor: "pointer",
-        }}
+        className={`ibmz-family-row ibmz-family-row--${family}`}
       >
         <span>{label}</span>
         <strong>

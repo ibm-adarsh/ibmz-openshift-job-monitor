@@ -39,6 +39,13 @@ import { sippyReleaseUrl } from "./utils/links";
 import { HistoryWindowPicker } from "./components/HistoryWindowPicker";
 import { TermHint } from "./components/TermHint";
 import { IstGreetingClock } from "./components/IstGreetingClock";
+import { ThemeToggle } from "./components/ThemeToggle";
+import {
+  type Theme,
+  persistTheme,
+  readStoredTheme,
+  resolveInitialTheme,
+} from "./theme";
 
 const WATCHLIST_KEY = "ibmz-watchlist-v1";
 const HISTORY_WINDOW_KEY = "ibmz-history-window-v1";
@@ -90,6 +97,11 @@ function App() {
   const [activeTab, setActiveTab] = useState<string | number>("jobs");
   const [historyWindow, setHistoryWindow] = useState<HistoryWindow>(loadHistoryWindow);
   const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [theme, setTheme] = useState<Theme>(() => readStoredTheme() ?? resolveInitialTheme());
+
+  useEffect(() => {
+    persistTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     localStorage.setItem(HISTORY_WINDOW_KEY, historyWindow);
@@ -279,12 +291,12 @@ function App() {
   ).length;
 
   const header = (
-    <Masthead>
+    <Masthead className="ibmz-masthead">
       <MastheadMain>
         <MastheadBrand>
           <MastheadLogo href="/" style={{ textDecoration: "none" }}>
             <Title headingLevel="h1" size="lg">
-              IBM Z OpenShift Job Monitor
+              <span className="ibmz-brand-gradient">IBM Z OpenShift Job Monitor</span>
             </Title>
           </MastheadLogo>
         </MastheadBrand>
@@ -360,7 +372,14 @@ function App() {
             </Flex>
           </FlexItem>
           <FlexItem>
-            <IstGreetingClock />
+            <Flex
+              alignItems={{ default: "alignItemsCenter" }}
+              gap={{ default: "gapMd" }}
+              flexWrap={{ default: "wrap" }}
+            >
+              <ThemeToggle theme={theme} onChange={setTheme} />
+              <IstGreetingClock />
+            </Flex>
           </FlexItem>
         </Flex>
       </MastheadContent>
@@ -370,7 +389,7 @@ function App() {
   return (
     <Page masthead={header}>
       <JobDetailDrawer job={selected} onClose={() => setSelected(null)}>
-        <PageSection type="tabs" isWidthLimited={false}>
+        <PageSection type="tabs" isWidthLimited={false} className="ibmz-tabs-section">
           <Tabs
             activeKey={activeTab}
             onSelect={(_e, key) => setActiveTab(key)}
@@ -406,22 +425,28 @@ function App() {
 
             {activeTab === "jobs" && (
               <>
-                <StackItem className="ibmz-jobs-toolbar-sticky">
-                  <HistoryWindowPicker
-                    value={historyWindow}
-                    onChange={setHistoryWindow}
-                    disabled={loading}
-                  />
-                </StackItem>
-                <StackItem className="ibmz-jobs-toolbar-sticky">
-                  <JobFilters
-                    filters={filters}
-                    onChange={setFilters}
-                    availableVersions={availableVersions}
-                  />
+                <StackItem>
+                  <div className="ibmz-jobs-chrome-sticky">
+                    <Stack hasGutter>
+                      <StackItem>
+                        <HistoryWindowPicker
+                          value={historyWindow}
+                          onChange={setHistoryWindow}
+                          disabled={loading}
+                        />
+                      </StackItem>
+                      <StackItem>
+                        <JobFilters
+                          filters={filters}
+                          onChange={setFilters}
+                          availableVersions={availableVersions}
+                        />
+                      </StackItem>
+                    </Stack>
+                  </div>
                 </StackItem>
                 <StackItem>
-                  <Content component="small">
+                  <Content component="small" className="ibmz-jobs-meta">
                     Showing <strong>{filtered.length}</strong> of <strong>{visibleJobPool.length}</strong> jobs
                     {" · "}
                     Runs column shows{" "}

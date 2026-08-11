@@ -37,6 +37,14 @@ export function PassRateMeter({
   const value = passRate == null ? 0 : Math.min(100, Math.max(0, passRate));
   const base = labelFor(passRate, passes, total);
   const text = passRate == null ? base : complete ? base : `~${base}`;
+  const valueClass =
+    passRate == null
+      ? "ibmz-pass-meter-value--muted"
+      : passRate >= 85
+        ? "ibmz-pass-meter-value--good"
+        : passRate >= 60
+          ? "ibmz-pass-meter-value--mid"
+          : "ibmz-pass-meter-value--low";
   const tip = [
     hint,
     complete
@@ -47,49 +55,24 @@ export function PassRateMeter({
     .filter(Boolean)
     .join(" · ");
   const body = (
-    <div style={{ minWidth: 110 }}>
+    <div className="ibmz-pass-meter" style={{ minWidth: 110 }}>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "baseline",
-          marginBottom: 2,
+          marginBottom: 4,
           gap: 8,
         }}
       >
-        <span
-          style={{
-            fontSize: "var(--pf-t--global--font--size--xs)",
-            color: "var(--pf-t--global--text--color--subtle)",
-            fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-            textTransform: "uppercase",
-            letterSpacing: "0.02em",
-          }}
-        >
-          {label}
-        </span>
-        <span
-          style={{
-            fontSize: "var(--pf-t--global--font--size--sm)",
-            fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-            color:
-              passRate == null
-                ? "var(--ibmz-muted)"
-                : passRate >= 85
-                  ? "var(--ibmz-success-strong)"
-                  : passRate >= 60
-                    ? "var(--ibmz-warning-strong)"
-                    : "var(--ibmz-danger-strong)",
-          }}
-        >
-          {text}
-        </span>
+        <span className="ibmz-pass-meter-label">{label}</span>
+        <span className={`ibmz-pass-meter-value ${valueClass}`}>{text}</span>
       </div>
       {passRate == null ? (
         <div
           style={{
-            height: 6,
-            borderRadius: 3,
+            height: 8,
+            borderRadius: 4,
             background: "var(--ibmz-surface-muted)",
           }}
         />

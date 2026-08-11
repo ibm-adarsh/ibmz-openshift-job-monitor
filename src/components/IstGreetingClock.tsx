@@ -47,53 +47,23 @@ export function IstGreetingClock() {
       direction={{ default: "column" }}
       alignItems={{ default: "alignItemsFlexEnd" }}
       gap={{ default: "gapNone" }}
-      style={{ lineHeight: 1.25, whiteSpace: "nowrap" }}
+      className="ibmz-ist-clock"
     >
       <FlexItem>
-        <span
-          style={{
-            fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-            fontSize: "var(--pf-t--global--font--size--sm)",
-          }}
-        >
-          {greeting}
-        </span>
+        <span className="ibmz-ist-greeting">{greeting}</span>
       </FlexItem>
       <FlexItem>
         <span
-          style={{
-            fontFamily: '"RedHatMono", "Red Hat Mono", ui-monospace, monospace',
-            fontSize: "var(--pf-t--global--font--size--md)",
-            fontVariantNumeric: "tabular-nums",
-            letterSpacing: "0.04em",
-          }}
+          className="ibmz-ist-time"
           aria-live="polite"
           aria-label={`Indian Standard Time ${date} ${time}`}
         >
           {time}
         </span>
-        <span
-          style={{
-            marginLeft: 8,
-            fontSize: "var(--pf-t--global--font--size--xs)",
-            color: "var(--pf-t--global--text--color--subtle)",
-            fontWeight: "var(--pf-t--global--font--weight--body--bold)",
-          }}
-        >
-          IST
-        </span>
+        <span className="ibmz-ist-tz">IST</span>
       </FlexItem>
       <FlexItem>
-        <span
-          style={{
-            fontFamily: '"RedHatMono", "Red Hat Mono", ui-monospace, monospace',
-            fontSize: "var(--pf-t--global--font--size--xs)",
-            color: "var(--pf-t--global--text--color--subtle)",
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {date}
-        </span>
+        <span className="ibmz-ist-date">{date}</span>
       </FlexItem>
     </Flex>
   );

@@ -4,6 +4,7 @@ import {
   StarIcon,
   OutlinedStarIcon,
 } from "@patternfly/react-icons";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
 import type { HistoryWindow, ZJob } from "../types";
 import { StatusLabel } from "./StatusLabel";
@@ -167,8 +168,6 @@ interface JobTableProps {
   watchlist: Set<string>;
   onToggleWatch: (id: string) => void;
   historyWindow: HistoryWindow;
-  /** Keep column headers visible while scrolling long job lists. */
-  stickyHeader?: boolean;
 }
 
 export function JobTable({
@@ -177,15 +176,30 @@ export function JobTable({
   watchlist,
   onToggleWatch,
   historyWindow,
-  stickyHeader = false,
 }: JobTableProps) {
   const showLastN = historyWindow === "last-10";
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [headerStuck, setHeaderStuck] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const sync = () => setHeaderStuck(el.scrollTop > 0);
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    return () => el.removeEventListener("scroll", sync);
+  }, [jobs.length]);
 
   return (
-    <div
-      className={`ibmz-job-table-wrap${stickyHeader ? " ibmz-job-table-wrap--sticky" : ""}`}
-    >
-      <Table aria-label="IBM Z jobs" variant="compact" isStickyHeader={stickyHeader}>
+    <div className="ibmz-job-table-wrap">
+      <div className="ibmz-job-table-scroll" ref={scrollRef}>
+        <Table
+          aria-label="IBM Z jobs"
+          variant="compact"
+          isStickyHeaderBase
+          isStickyHeaderStuck={headerStuck}
+        >
         <Thead>
           <Tr>
             <Th screenReaderText="Watchlist" style={{ width: "2.75rem" }} />
@@ -437,6 +451,7 @@ export function JobTable({
         })}
       </Tbody>
     </Table>
+      </div>
     </div>
   );
 }
