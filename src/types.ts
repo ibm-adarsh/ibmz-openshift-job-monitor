@@ -118,7 +118,6 @@ export type VersionHealth = "green" | "yellow" | "red" | "unknown";
 
 export interface VersionSummary {
   version: string;
-  eos: boolean;
   health: VersionHealth;
   jobs: ZJob[];
   passing: number;

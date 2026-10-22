@@ -40,7 +40,6 @@ function streakLabel(n: number): string {
 
 export function UpgradeChain({ versions, onShowVersion }: UpgradeChainProps) {
   const active = [...versions]
-    .filter((v) => !v.eos)
     .sort((a, b) => {
       const [amaj, amin] = a.version.split(".").map(Number);
       const [bmaj, bmin] = b.version.split(".").map(Number);
@@ -88,7 +87,7 @@ export function UpgradeChain({ versions, onShowVersion }: UpgradeChainProps) {
             </FlexItem>
           </Flex>
           <Content component="p" className="ibmz-panel-subtitle">
-            Upgrade source/target comes from each job's configured path (for example 4.22 → 5.0). Non-EOS versions only.
+            Upgrade source/target comes from each job's configured path (for example 4.22 → 5.0).
           </Content>
           <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
             <Label color={failing > 0 ? "red" : "green"} isCompact icon={failing > 0 ? <TimesCircleIcon /> : <CheckCircleIcon />}>

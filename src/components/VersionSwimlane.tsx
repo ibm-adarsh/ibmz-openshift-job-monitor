@@ -63,15 +63,6 @@ export function VersionSwimlane({
           </Label>
         </Tooltip>
       </FlexItem>
-      {summary.eos && (
-        <FlexItem>
-          <Tooltip content="End-of-support OCP version — still listed when Hide EOS is off.">
-            <Label color="grey" isCompact>
-              End of support
-            </Label>
-          </Tooltip>
-        </FlexItem>
-      )}
       <FlexItem>
         <span
           style={{

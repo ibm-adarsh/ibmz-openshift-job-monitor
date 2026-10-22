@@ -101,15 +101,14 @@ export function computeReadiness(v: VersionSummary): ReadinessSignal {
 export function fleetHeadline(
   versions: VersionSummary[],
 ): { tone: "success" | "warning" | "danger" | "unknown"; text: string; detail: string } {
-  const active = versions.filter((v) => !v.eos);
-  if (!active.length) {
+  if (!versions.length) {
     return {
       tone: "unknown",
-      text: "No supported OCP versions in view",
-      detail: "EOS (end-of-support) versions are excluded from this summary.",
+      text: "No OCP versions in view",
+      detail: "Adjust filters or wait for the job inventory to load.",
     };
   }
-  const signals = active.map(computeReadiness);
+  const signals = versions.map(computeReadiness);
   const blocked = signals.filter((s) => s === "blocked").length;
   const atRisk = signals.filter((s) => s === "at-risk").length;
   const ready = signals.filter((s) => s === "ready").length;
@@ -117,7 +116,7 @@ export function fleetHeadline(
   if (blocked > 0) {
     return {
       tone: "danger",
-      text: `${blocked} of ${active.length} OCP versions are blocked`,
+      text: `${blocked} of ${versions.length} OCP versions are blocked`,
       detail:
         "Blocked means at least one required release-gate job is failing, has 3+ consecutive failures, or has never passed. " +
         `${ready} ready · ${atRisk} at risk · ${noData} without enough data.`,
@@ -126,7 +125,7 @@ export function fleetHeadline(
   if (atRisk > 0) {
     return {
       tone: "warning",
-      text: `${atRisk} of ${active.length} OCP versions are at risk`,
+      text: `${atRisk} of ${versions.length} OCP versions are at risk`,
       detail:
         "At risk means a gate job is flaking, had a recent failure, or has not been green for more than 7 days. " +
         `${ready} ready · ${noData} without enough data.`,
@@ -136,7 +135,7 @@ export function fleetHeadline(
     return {
       tone: "success",
       text: `All ${ready} OCP versions look ready`,
-      detail: "Required release-gate jobs are currently healthy for every supported version.",
+      detail: "Required release-gate jobs are currently healthy for every monitored version.",
     };
   }
   if (ready > 0) {

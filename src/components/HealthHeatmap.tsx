@@ -54,7 +54,7 @@ interface HealthHeatmapProps {
 }
 
 export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmapProps) {
-  const active = versions.filter((v) => !v.eos);
+  const active = versions;
 
   return (
     <Card className="ibmz-panel-card ibmz-heatmap-card">
@@ -81,8 +81,8 @@ export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmap
             </FlexItem>
           </Flex>
           <Content component="p" className="ibmz-panel-subtitle">
-            30-day Passed/Total % by job type and OCP version (non-EOS only). Darker green =
-            healthier; red = needs attention.
+            30-day Passed/Total % by job type and OCP version. Darker green = healthier; red =
+            needs attention.
           </Content>
           <Flex gap={{ default: "gapMd" }} flexWrap={{ default: "wrap" }} className="ibmz-legend-row">
             <LegendItem tone="good" label="Healthy — 85% or higher" />

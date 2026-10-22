@@ -25,7 +25,7 @@ import {
 } from "@patternfly/react-core";
 import { SyncAltIcon } from "@patternfly/react-icons";
 import "@patternfly/react-core/dist/styles/base.css";
-import { groupByVersion, isEosVersion, loadInventoryJobs } from "./data/inventory";
+import { groupByVersion, loadInventoryJobs } from "./data/inventory";
 import { hydrateJobsLive, type LiveLoadProgress } from "./data/hydrateLive";
 import { JobFilters, type FilterState } from "./components/JobFilters";
 import { VersionSwimlane } from "./components/VersionSwimlane";
@@ -75,7 +75,6 @@ const DEFAULT_FILTERS: FilterState = {
   category: "all",
   jobType: "all",
   failingOnly: false,
-  hideEos: true,
   requiredOnly: false,
   neverPassedOnly: false,
   watchlistOnly: false,
@@ -176,7 +175,6 @@ function App() {
       ...f,
       ocpVersion: version,
       jobType,
-      hideEos: isEosVersion(version) ? false : f.hideEos,
     }));
     setActiveTab("jobs");
     window.setTimeout(() => {
@@ -185,14 +183,7 @@ function App() {
   }, []);
 
   const goToJobs = useCallback((patch: Partial<FilterState>) => {
-    setFilters((f) => {
-      const next = { ...f, ...patch };
-      // Keep Hide EOS on unless the user is drilling into an EOS version.
-      if (patch.ocpVersion && patch.ocpVersion !== "all" && isEosVersion(patch.ocpVersion)) {
-        next.hideEos = false;
-      }
-      return next;
-    });
+    setFilters((f) => ({ ...f, ...patch }));
     setActiveTab("jobs");
   }, []);
 
@@ -251,7 +242,6 @@ function App() {
   const filtered = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
     return jobs.filter((job) => {
-      if (filters.hideEos && isEosVersion(job.ocpVersion)) return false;
       if (filters.category !== "all" && job.category !== filters.category) return false;
       if (filters.jobType !== "all" && job.jobType !== filters.jobType) return false;
       if (filters.requiredOnly && !job.requiredForRelease) return false;
@@ -276,17 +266,12 @@ function App() {
 
   const versions = useMemo(() => groupByVersion(filtered), [filtered]);
 
-  const visibleJobPool = useMemo(
-    () => jobs.filter((j) => !filters.hideEos || !isEosVersion(j.ocpVersion)),
-    [jobs, filters.hideEos],
-  );
-
+  const visibleJobPool = jobs;
   const allVersionGroups = useMemo(() => groupByVersion(jobs), [jobs]);
-  const activeJobs = useMemo(() => jobs.filter((j) => !isEosVersion(j.ocpVersion)), [jobs]);
-  const liveCount = activeJobs.filter((j) => j.dataProvenance === "live").length;
-  const partialCount = activeJobs.filter((j) => j.dataProvenance === "partial").length;
-  const failingCount = activeJobs.filter((j) => j.latestTerminalOutcome === "failure").length;
-  const runningCount = activeJobs.filter(
+  const liveCount = jobs.filter((j) => j.dataProvenance === "live").length;
+  const partialCount = jobs.filter((j) => j.dataProvenance === "partial").length;
+  const failingCount = jobs.filter((j) => j.latestTerminalOutcome === "failure").length;
+  const runningCount = jobs.filter(
     (j) => j.latestOutcome === "running" || j.latestOutcome === "pending",
   ).length;
 
@@ -333,10 +318,10 @@ function App() {
               </FlexItem>
               <FlexItem>
                 <Tooltip
-                  content={`${liveCount} of ${activeJobs.length} supported (non-EOS) jobs have completed run history. ${partialCount} have Sippy stats only.`}
+                  content={`${liveCount} of ${jobs.length} monitored jobs have completed run history. ${partialCount} have Sippy stats only.`}
                 >
                   <Label color="green" isCompact>
-                    {liveCount}/{activeJobs.length} with run history
+                    {liveCount}/{jobs.length} with run history
                   </Label>
                 </Tooltip>
               </FlexItem>
@@ -351,7 +336,7 @@ function App() {
               )}
               {failingCount > 0 && (
                 <FlexItem>
-                  <Tooltip content="Supported jobs whose most recent finished run failed.">
+                  <Tooltip content="Jobs whose most recent finished run failed.">
                     <Label color="red" isCompact>
                       {failingCount} last finished run failed
                     </Label>

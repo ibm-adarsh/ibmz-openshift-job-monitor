@@ -30,17 +30,16 @@ const SIGNAL_META = {
 };
 
 export function ReleaseReadinessCard({ versions }: ReleaseReadinessCardProps) {
-  const active = versions.filter((v) => !v.eos);
-  if (!active.length) return null;
+  if (!versions.length) return null;
 
   return (
     <Card isCompact className="ibmz-panel-card">
       <CardTitle className="ibmz-panel-title ibmz-panel-heading" style={{ padding: "1rem 1.25rem" }}>
-        Release readiness (gate jobs · non-EOS)
+        Release readiness (gate jobs)
       </CardTitle>
       <CardBody>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {active.map((v) => {
+          {versions.map((v) => {
             const signal = computeReadiness(v);
             const meta = SIGNAL_META[signal];
             const required = v.jobs.filter((j) => j.requiredForRelease);

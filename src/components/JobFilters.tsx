@@ -24,7 +24,6 @@ export interface FilterState {
   category: JobCategory;
   jobType: "all" | JobType;
   failingOnly: boolean;
-  hideEos: boolean;
   requiredOnly: boolean;
   neverPassedOnly: boolean;
   watchlistOnly: boolean;
@@ -64,7 +63,6 @@ const EMPTY: FilterState = {
   category: "all",
   jobType: "all",
   failingOnly: false,
-  hideEos: true,
   requiredOnly: false,
   neverPassedOnly: false,
   watchlistOnly: false,
@@ -195,7 +193,7 @@ export function JobFilters({ filters, onChange, availableVersions }: JobFiltersP
             </Tooltip>
           </ToolbarItem>
           <ToolbarItem>
-            <Tooltip content="Show only jobs required for release readiness (e2e, serial, upgrade on non-EOS versions).">
+            <Tooltip content="Show only jobs required for release readiness (e2e, serial, upgrade).">
               <Checkbox
                 id="required-only"
                 label="Release gates only"
@@ -203,14 +201,6 @@ export function JobFilters({ filters, onChange, availableVersions }: JobFiltersP
                 onChange={(_e, checked) => onChange({ ...filters, requiredOnly: checked })}
               />
             </Tooltip>
-          </ToolbarItem>
-          <ToolbarItem>
-            <Checkbox
-              id="hide-eos"
-              label="Hide EOS (≤4.13)"
-              isChecked={filters.hideEos}
-              onChange={(_e, checked) => onChange({ ...filters, hideEos: checked })}
-            />
           </ToolbarItem>
           <ToolbarItem>
             <Button

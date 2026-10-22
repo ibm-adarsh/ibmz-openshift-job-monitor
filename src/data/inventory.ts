@@ -14,18 +14,9 @@ interface InventoryRow {
   upgradeFrom: string | null;
 }
 
-const EOS_MAX = { major: 4, minor: 13 };
-
 export function parseVersion(v: string): { major: number; minor: number } {
   const [major, minor] = v.split(".").map(Number);
   return { major, minor };
-}
-
-export function isEosVersion(version: string): boolean {
-  const { major, minor } = parseVersion(version);
-  if (major < EOS_MAX.major) return true;
-  if (major === EOS_MAX.major && minor <= EOS_MAX.minor) return true;
-  return false;
 }
 
 /** Heterogeneous Z jobs: x86↔Z (x-xz), Z↔x86 (z-xz), Z↔arm64 (z-za). */
@@ -125,8 +116,7 @@ export function loadInventoryJobs(): ZJob[] {
               : category === "heterogeneous"
                 ? "z-hetero"
                 : "z-libvirt",
-        requiredForRelease:
-          ["e2e", "upgrade", "serial"].includes(jobType) && !isEosVersion(row.ocpVersion),
+        requiredForRelease: ["e2e", "upgrade", "serial"].includes(jobType),
         dataProvenance: "none" as const,
       };
     })
@@ -188,7 +178,6 @@ export function groupByVersion(jobs: ZJob[]): VersionSummary[] {
       const rates = weightedPassRate(sorted, "30d");
       return {
         version,
-        eos: isEosVersion(version),
         health: versionHealth(sorted),
         jobs: sorted,
         passing: sorted.filter((j) => terminalOutcome(j) === "success").length,

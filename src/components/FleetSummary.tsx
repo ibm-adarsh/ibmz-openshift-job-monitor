@@ -31,8 +31,6 @@ import {
   weightedPassRate,
   type ReadinessSignal,
 } from "../utils/stats";
-import { isEosVersion } from "../data/inventory";
-
 interface FleetSummaryProps {
   jobs: ZJob[];
   versions: VersionSummary[];
@@ -176,46 +174,37 @@ export function FleetSummary({
   const refreshLabel =
     REFRESH_OPTIONS.find((o) => o.value === autoRefreshSecs)?.label ?? "Off";
 
-  const activeJobs = useMemo(
-    () => jobs.filter((j) => !isEosVersion(j.ocpVersion)),
-    [jobs],
-  );
-  const activeVersions = useMemo(
-    () => versions.filter((v) => !v.eos),
-    [versions],
-  );
-
   const headline = useMemo(() => fleetHeadline(versions), [versions]);
-  const cats = useMemo(() => categoryCounts(activeJobs), [activeJobs]);
-  const pass7 = useMemo(() => weightedPassRate(activeJobs, "7d"), [activeJobs]);
-  const pass30 = useMemo(() => weightedPassRate(activeJobs, "30d"), [activeJobs]);
+  const cats = useMemo(() => categoryCounts(jobs), [jobs]);
+  const pass7 = useMemo(() => weightedPassRate(jobs, "7d"), [jobs]);
+  const pass30 = useMemo(() => weightedPassRate(jobs, "30d"), [jobs]);
 
-  const failing = activeJobs.filter((j) => j.latestTerminalOutcome === "failure").length;
-  const flaking = activeJobs.filter((j) => isStreakFlaking(j)).length;
-  const passing = activeJobs.filter((j) => j.latestTerminalOutcome === "success").length;
-  const noData = activeJobs.filter((j) => j.dataProvenance === "none").length;
-  const partial = activeJobs.filter((j) => j.dataProvenance === "partial").length;
-  const withLiveRuns = activeJobs.filter((j) => j.dataProvenance === "live").length;
-  const running = activeJobs.filter(
+  const failing = jobs.filter((j) => j.latestTerminalOutcome === "failure").length;
+  const flaking = jobs.filter((j) => isStreakFlaking(j)).length;
+  const passing = jobs.filter((j) => j.latestTerminalOutcome === "success").length;
+  const noData = jobs.filter((j) => j.dataProvenance === "none").length;
+  const partial = jobs.filter((j) => j.dataProvenance === "partial").length;
+  const withLiveRuns = jobs.filter((j) => j.dataProvenance === "live").length;
+  const running = jobs.filter(
     (j) => j.latestOutcome === "running" || j.latestOutcome === "pending",
   ).length;
-  const otherTerminal = activeJobs.filter((j) => {
+  const otherTerminal = jobs.filter((j) => {
     const t = j.latestTerminalOutcome;
     if (t == null) return false;
     return t !== "success" && t !== "failure";
   }).length;
-  const incomplete7 = activeJobs.filter(
+  const incomplete7 = jobs.filter(
     (j) => j.dataProvenance === "live" && !j.windowComplete7d && (j.runs7d ?? 0) > 0,
   ).length;
-  const incomplete30 = activeJobs.filter(
+  const incomplete30 = jobs.filter(
     (j) => j.dataProvenance === "live" && !j.windowComplete30d && (j.runs30d ?? 0) > 0,
   ).length;
 
   const readiness = useMemo(() => {
     const map = { ready: 0, "at-risk": 0, blocked: 0, "no-data": 0 };
-    for (const v of activeVersions) map[computeReadiness(v)] += 1;
+    for (const v of versions) map[computeReadiness(v)] += 1;
     return map;
-  }, [activeVersions]);
+  }, [versions]);
 
   return (
     <Card className="ibmz-panel-card ibmz-fleet-card">
@@ -251,11 +240,7 @@ export function FleetSummary({
                 fontSize: "var(--pf-t--global--font--size--xs)",
               }}
             >
-              Scope: non-EOS OCP versions only (
-              <TermHint meaning="Older OCP versions that are out of support are hidden here.">
-                EOS excluded
-              </TermHint>
-              ) · data from{" "}
+              Scope: OCP 4.13–5.x IBM Z jobs · data from{" "}
               <TermHint meaning="Sippy gives job health and pass/fail trends.">Sippy</TermHint>{" "}
               + <TermHint meaning="Prow gives individual run details and logs.">Prow</TermHint> · last
               refreshed {refreshedAt.toLocaleString()}
@@ -273,7 +258,7 @@ export function FleetSummary({
               >
                 View failing jobs
               </Button>
-              <Button variant="link" size="sm" icon={<DownloadIcon />} onClick={() => exportCsv(activeJobs)}>
+              <Button variant="link" size="sm" icon={<DownloadIcon />} onClick={() => exportCsv(jobs)}>
                 CSV
               </Button>
               <Button variant="link" size="sm" icon={<SyncAltIcon />} onClick={onRefresh}>
@@ -313,13 +298,13 @@ export function FleetSummary({
 
         <div className="ibmz-stat-grid">
           <Stat
-            value={activeJobs.length}
+            value={jobs.length}
             label="IBM Z jobs"
-            meaning="Total IBM Z jobs shown for non-EOS OCP versions."
+            meaning="Total monitored IBM Z jobs across OCP 4.13–5.x."
             variant="accent"
           />
           <Stat
-            value={`${withLiveRuns}/${activeJobs.length}`}
+            value={`${withLiveRuns}/${jobs.length}`}
             label="Have run history"
             meaning="Jobs where we got at least one finished run."
             variant="teal"
@@ -443,7 +428,7 @@ export function FleetSummary({
                 passes={pass7.passes}
                 total={pass7.total}
                 complete={incomplete7 === 0}
-                hint="Passed runs out of total counted runs in the last 7 days across non-EOS OCP versions (aborted excluded)"
+                hint="Passed runs out of total counted runs in the last 7 days across monitored OCP versions (aborted excluded)"
               />
               <PassRateMeter
                 label="Last 30 days"
@@ -451,7 +436,7 @@ export function FleetSummary({
                 passes={pass30.passes}
                 total={pass30.total}
                 complete={incomplete30 === 0}
-                hint="Passed runs out of total counted runs in the last 30 days across non-EOS OCP versions (aborted excluded)"
+                hint="Passed runs out of total counted runs in the last 30 days across monitored OCP versions (aborted excluded)"
               />
             </Flex>
           </div>
@@ -486,7 +471,7 @@ export function FleetSummary({
           <div style={{ minWidth: 260, flex: "2 1 280px" }}>
             <div className="ibmz-section-label">Versions (click to open Jobs)</div>
             <Flex gap={{ default: "gapSm" }} flexWrap={{ default: "wrap" }}>
-              {activeVersions.map((v) => {
+              {versions.map((v) => {
                 const signal = computeReadiness(v);
                 const rate = weightedPassRate(v.jobs, "30d");
                 return (
@@ -534,7 +519,7 @@ export function FleetSummary({
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <VersionDetailTable
-              versions={activeVersions}
+              versions={versions}
               onShowVersion={onShowVersion}
             />
             {details}
