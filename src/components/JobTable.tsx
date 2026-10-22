@@ -11,7 +11,7 @@ import { StatusLabel } from "./StatusLabel";
 import { RunSparkline } from "./RunSparkline";
 import { PassRatePair } from "./PassRatePair";
 import { formatRelative } from "../utils/format";
-import { isHeterogeneousJobName } from "../data/inventory";
+import { heterogeneousTopology, isHeterogeneousJobName } from "../data/inventory";
 import { applyHistoryWindow } from "../data/hydrateLive";
 import { displayOutcomeForRow, statusOutcomeForJob, isStreakFlaking, STREAK_FLAKE_PASS_RATE_THRESHOLD } from "../utils/stats";
 
@@ -57,17 +57,18 @@ function rowBg(job: ZJob): string | undefined {
   return undefined;
 }
 
+const TOPOLOGY_TIP: Record<"x-xz" | "z-xz" | "z-za", string> = {
+  "x-xz": "x86 control plane + Z workers",
+  "z-xz": "Z control plane + x86 workers",
+  "z-za": "Z control plane + arm64 workers",
+};
+
 function TopologyBadge({ job }: { job: ZJob }) {
   if (!isHeterogeneousJobName(job.name)) return null;
-  const topo = job.name.endsWith("-x-xz") ? "x-xz" : "z-xz";
+  const topo = heterogeneousTopology(job.name);
+  if (!topo) return null;
   return (
-    <Tooltip
-      content={
-        topo === "x-xz"
-          ? "x86 control plane + Z workers"
-          : "Z control plane + x86 workers"
-      }
-    >
+    <Tooltip content={TOPOLOGY_TIP[topo]}>
       <Label isCompact color="purple">
         {topo}
       </Label>

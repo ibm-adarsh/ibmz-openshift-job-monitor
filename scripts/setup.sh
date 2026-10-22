@@ -23,13 +23,20 @@ echo "==> npm install"
 npm install
 
 echo "==> Sync job inventory from openshift/release (main branch configs)"
-if [[ -d "../release/ci-operator/config/openshift/multiarch" ]]; then
+VENDOR_RELEASE="$MONITOR_ROOT/.vendor/openshift-release"
+if [[ -d "$VENDOR_RELEASE/ci-operator/config/openshift/multiarch" ]]; then
+  export RELEASE_ROOT="$VENDOR_RELEASE"
+  echo "    Found local vendor clone: $RELEASE_ROOT"
+elif [[ -d "../release/ci-operator/config/openshift/multiarch" ]]; then
   export RELEASE_ROOT="$(cd ../release && pwd)"
   echo "    Found sibling release clone: $RELEASE_ROOT"
 elif [[ -n "${RELEASE_ROOT:-}" ]]; then
   echo "    Using RELEASE_ROOT=$RELEASE_ROOT"
 else
-  echo "    Warning: no ../release clone found. Clone openshift/release as a sibling or set RELEASE_ROOT."
+  echo "    Warning: no release clone found. Prefer:"
+  echo "      git clone --depth 1 --filter=blob:none --sparse https://github.com/openshift/release.git .vendor/openshift-release"
+  echo "      (cd .vendor/openshift-release && git sparse-checkout set ci-operator/config/openshift/multiarch)"
+  echo "    Or clone openshift/release as a sibling / set RELEASE_ROOT."
 fi
 python3 "$SCRIPT_DIR/regenerate-inventory.py"
 

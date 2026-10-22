@@ -469,7 +469,7 @@ export function FleetSummary({
               <FamilyRow
                 label="Heterogeneous"
                 count={cats.heterogeneous}
-                tip="Only *-x-xz and *-z-xz"
+                tip="*-x-xz, *-z-xz, and *-z-za"
                 onClick={() => onShowCategory("heterogeneous")}
                 family="hetero"
               />
@@ -644,7 +644,7 @@ function VersionDetailTable({
       </table>
       <div className="ibmz-detail-table-footnote">
         Last pass / Last fail = jobs whose most recent finished run passed or failed. Category
-        columns and 7d/30d columns show Passed/Total %. Heterogeneous = *-x-xz / *-z-xz only.
+        columns and 7d/30d columns show Passed/Total %. Heterogeneous = *-x-xz / *-z-xz / *-z-za.
       </div>
     </div>
   );

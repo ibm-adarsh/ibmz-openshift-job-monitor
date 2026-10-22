@@ -8,25 +8,23 @@ Data is loaded from **Sippy** and **Prow**. Job names are synced from **`openshi
 
 ## Quick start (standalone repo + release clone)
 
-### 1. Clone both repos (siblings on disk)
+### 1. Clone this repo, then pull `openshift/release` locally (gitignored)
+
+Preferred: sparse clone under `.vendor/` (not tracked / not committed):
 
 ```bash
-mkdir ~/ibmz-ci && cd ~/ibmz-ci
-
 git clone https://github.com/ibm-adarsh/ibmz-openshift-job-monitor.git
-git clone https://github.com/openshift/release.git
-cd release && git checkout main && git pull
+cd ibmz-openshift-job-monitor
+
+mkdir -p .vendor
+git clone --depth 1 --filter=blob:none --sparse \
+  https://github.com/openshift/release.git .vendor/openshift-release
+cd .vendor/openshift-release
+git sparse-checkout set ci-operator/config/openshift/multiarch
+cd ../..
 ```
 
-Expected layout:
-
-```text
-ibmz-ci/
-  ibmz-openshift-job-monitor/   ← this repo
-  release/                      ← openshift/release on main
-```
-
-The inventory script auto-detects `../release` when repos are siblings.
+Alternatively, keep a full sibling clone at `../release`. The inventory script auto-detects `.vendor/openshift-release`, then `../release`.
 
 ### 2. Setup (one command)
 
@@ -35,7 +33,7 @@ cd ibmz-openshift-job-monitor
 npm run setup
 ```
 
-Runs `npm install` and writes `src/data/job-inventory.json` from `release/ci-operator/config/openshift/multiarch/`.
+Runs `npm install` and writes `src/data/job-inventory.json` from the release multiarch configs (OCP **4.13–5.x** IBM Z jobs only).
 
 ### 3. Run
 
@@ -71,15 +69,17 @@ python3 scripts/regenerate-inventory.py --release-root /path/to/release --list
 After upstream CI config changes on **main**:
 
 ```bash
-cd ../release && git pull origin main
-cd ../ibmz-openshift-job-monitor && npm run inventory
+# vendor clone
+cd .vendor/openshift-release && git pull origin main && cd ../..
+# or sibling: cd ../release && git pull origin main
+npm run inventory
 ```
 
 ---
 
 ## What gets synced?
 
-Jobs from `openshift-multiarch-main__nightly-*.yaml` targeting **s390x / multi-z / libvirt-s390x** (Power excluded). **Heterogeneous** = names ending in `-x-xz` or `-z-xz`.
+Jobs from `openshift-multiarch-main__nightly-*.yaml` targeting **s390x / multi-z / libvirt-s390x** (Power excluded), for **OCP 4.13 through 5.x** only (older nightlies and 6.x+ are dropped). **Heterogeneous** = names ending in `-x-xz`, `-z-xz`, or `-z-za` (Z + arm64).
 
 ---
 

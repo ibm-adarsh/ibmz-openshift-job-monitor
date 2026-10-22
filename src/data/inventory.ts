@@ -28,9 +28,16 @@ export function isEosVersion(version: string): boolean {
   return false;
 }
 
-/** Heterogeneous Z jobs are only the x86↔Z (x-xz) and Z↔x86 (z-xz) topologies. */
+/** Heterogeneous Z jobs: x86↔Z (x-xz), Z↔x86 (z-xz), Z↔arm64 (z-za). */
 export function isHeterogeneousJobName(name: string): boolean {
-  return name.endsWith("-x-xz") || name.endsWith("-z-xz");
+  return name.endsWith("-x-xz") || name.endsWith("-z-xz") || name.endsWith("-z-za");
+}
+
+export function heterogeneousTopology(name: string): "x-xz" | "z-xz" | "z-za" | null {
+  if (name.endsWith("-x-xz")) return "x-xz";
+  if (name.endsWith("-z-xz")) return "z-xz";
+  if (name.endsWith("-z-za")) return "z-za";
+  return null;
 }
 
 /** Collapse inventory tags into product families using job name as source of truth. */
@@ -59,8 +66,9 @@ export function loadInventoryJobs(): ZJob[] {
   return (inventory as InventoryRow[])
     .filter((r) => {
       const { major, minor } = parseVersion(r.ocpVersion);
-      if (major === 4 && minor >= 8) return true;
-      if (major === 5 && minor <= 1) return true;
+      // Keep in sync with scripts/regenerate-inventory.py (OCP 4.13–5.x).
+      if (major === 4 && minor >= 13) return true;
+      if (major === 5) return true;
       return false;
     })
     .map((row) => {

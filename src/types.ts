@@ -19,7 +19,7 @@ export type JobType =
   | "techpreview";
 
 /** High-level job family for filtering.
- * Heterogeneous = only *-x-xz / *-z-xz topologies (not multi-z-z or s390x-only).
+ * Heterogeneous = *-x-xz / *-z-xz / *-z-za topologies (not multi-z-z or s390x-only).
  */
 export type JobCategory =
   | "all"

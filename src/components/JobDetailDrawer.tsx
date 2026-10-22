@@ -132,6 +132,11 @@ export function JobDetailDrawer({ job, onClose, children }: JobDetailDrawerProps
                   z-xz
                 </Label>
               )}
+              {job.name.endsWith("-z-za") && (
+                <Label isCompact color="purple">
+                  z-za
+                </Label>
+              )}
               {job.requiredForRelease && (
                 <Label isCompact color="orange">
                   Release gate

@@ -2,7 +2,12 @@
 """
 Scan openshift/release multiarch nightly CI configs and write job-inventory.json.
 
-Default release root: three levels above this script (tools/ibmz-openshift-job-monitor → release repo root).
+Monitors IBM Z (s390x) jobs for OCP 4.13 through 5.x only.
+
+Default release root (first match):
+  .vendor/openshift-release  (gitignored local clone)
+  ../release                 (sibling clone)
+  RELEASE_ROOT / --release-root
 
 Override:
   RELEASE_ROOT=/path/to/release python3 scripts/regenerate-inventory.py
@@ -24,6 +29,31 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 MONITOR_ROOT = SCRIPT_DIR.parent
 OUT = MONITOR_ROOT / "src/data/job-inventory.json"
 
+# Inclusive lower bound; exclusive upper major (4.13 … 5.x).
+MIN_OCP = (4, 13)
+MAX_OCP_MAJOR = 5
+
+
+def parse_ocp_version(ver: str) -> tuple[int, int] | None:
+    m = re.fullmatch(r"(\d+)\.(\d+)", ver)
+    if not m:
+        return None
+    return int(m.group(1)), int(m.group(2))
+
+
+def is_monitored_ocp_version(ver: str) -> bool:
+    parsed = parse_ocp_version(ver)
+    if parsed is None:
+        return False
+    major, minor = parsed
+    if major > MAX_OCP_MAJOR:
+        return False
+    if major < MIN_OCP[0]:
+        return False
+    if major == MIN_OCP[0] and minor < MIN_OCP[1]:
+        return False
+    return True
+
 
 def resolve_release_root(explicit: str | None) -> Path:
     if explicit:
@@ -33,6 +63,7 @@ def resolve_release_root(explicit: str | None) -> Path:
         return Path(env).resolve()
 
     candidates: list[Path] = [
+        MONITOR_ROOT / ".vendor" / "openshift-release",
         MONITOR_ROOT.parent / "release",
         MONITOR_ROOT.parents[1],
     ]
@@ -42,7 +73,7 @@ def resolve_release_root(explicit: str | None) -> Path:
         if multiarch.is_dir():
             return c
 
-    return (MONITOR_ROOT.parent / "release").resolve()
+    return (MONITOR_ROOT / ".vendor" / "openshift-release").resolve()
 
 
 def collect_jobs(multiarch: Path) -> list[dict]:
@@ -55,6 +86,8 @@ def collect_jobs(multiarch: Path) -> list[dict]:
         if not m:
             continue
         ver = m.group(1)
+        if not is_monitored_ocp_version(ver):
+            continue
         text = f.read_text()
         for block in re.split(r"\n- as: ", text)[1:]:
             job = block.split("\n", 1)[0].strip()
@@ -82,7 +115,7 @@ def collect_jobs(multiarch: Path) -> list[dict]:
             elif "techpreview" in job:
                 jtype = "techpreview"
             category = "old-profile"
-            if job.endswith("-x-xz") or job.endswith("-z-xz"):
+            if job.endswith("-x-xz") or job.endswith("-z-xz") or job.endswith("-z-za"):
                 category = "heterogeneous"
             elif "ibmcloud" in profile:
                 category = "ibmcloud"
@@ -168,11 +201,20 @@ def main() -> None:
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
         print(
-            "Clone openshift/release (main) and run again, or set RELEASE_ROOT:",
+            "Clone openshift/release (main) into .vendor/ or set RELEASE_ROOT:",
             file=sys.stderr,
         )
-        print("  git clone https://github.com/openshift/release.git", file=sys.stderr)
-        print("  RELEASE_ROOT=/path/to/release npm run inventory", file=sys.stderr)
+        print(
+            "  git clone --depth 1 --filter=blob:none --sparse "
+            "https://github.com/openshift/release.git .vendor/openshift-release",
+            file=sys.stderr,
+        )
+        print(
+            "  (cd .vendor/openshift-release && "
+            "git sparse-checkout set ci-operator/config/openshift/multiarch)",
+            file=sys.stderr,
+        )
+        print("  npm run inventory", file=sys.stderr)
         sys.exit(1)
 
     if args.list:
