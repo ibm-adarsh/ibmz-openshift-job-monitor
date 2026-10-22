@@ -2,6 +2,8 @@
 
 Live dashboard for **IBM Z (s390x)** OpenShift CI periodic jobs — pass rates, upgrade health, and release readiness across OCP versions.
 
+**Site URL:** **https://ibm-adarsh.github.io/ibmz-openshift-job-monitor/**
+
 Data is loaded from **Sippy** and **Prow**. Job names are synced from **`openshift/release`** `ci-operator` configs (main branch).
 
 ---
