@@ -129,7 +129,7 @@
     "ocpVersion": "4.15",
     "name": "ocp-e2e-ovn-remote-libvirt-s390x-heterogeneous",
     "jobType": "e2e",
-    "category": "old-profile",
+    "category": "heterogeneous",
     "clusterProfile": "libvirt-s390x-amd64",
     "configFile": "openshift-multiarch-main__nightly-4.15.yaml",
     "upgradeFrom": null
@@ -192,7 +192,7 @@
     "ocpVersion": "4.16",
     "name": "ocp-e2e-ovn-remote-libvirt-s390x-heterogeneous",
     "jobType": "e2e",
-    "category": "old-profile",
+    "category": "heterogeneous",
     "clusterProfile": "libvirt-s390x-amd64",
     "configFile": "openshift-multiarch-main__nightly-4.16.yaml",
     "upgradeFrom": null

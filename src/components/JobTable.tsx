@@ -57,10 +57,11 @@ function rowBg(job: ZJob): string | undefined {
   return undefined;
 }
 
-const TOPOLOGY_TIP: Record<"x-xz" | "z-xz" | "z-za", string> = {
+const TOPOLOGY_TIP: Record<"x-xz" | "z-xz" | "z-za" | "heterogeneous", string> = {
   "x-xz": "x86 control plane + Z workers",
   "z-xz": "Z control plane + x86 workers",
   "z-za": "Z control plane + arm64 workers",
+  heterogeneous: "Legacy mixed-arch Z job (*-heterogeneous)",
 };
 
 function TopologyBadge({ job }: { job: ZJob }) {

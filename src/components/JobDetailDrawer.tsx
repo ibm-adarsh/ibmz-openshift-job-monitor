@@ -137,6 +137,11 @@ export function JobDetailDrawer({ job, onClose, children }: JobDetailDrawerProps
                   z-za
                 </Label>
               )}
+              {job.name.endsWith("-heterogeneous") && (
+                <Label isCompact color="purple">
+                  heterogeneous
+                </Label>
+              )}
               {job.requiredForRelease && (
                 <Label isCompact color="orange">
                   Release gate

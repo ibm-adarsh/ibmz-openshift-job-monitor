@@ -19,15 +19,23 @@ export function parseVersion(v: string): { major: number; minor: number } {
   return { major, minor };
 }
 
-/** Heterogeneous Z jobs: x86↔Z (x-xz), Z↔x86 (z-xz), Z↔arm64 (z-za). */
+/** Heterogeneous Z jobs: x86↔Z (x-xz), Z↔x86 (z-xz), Z↔arm64 (z-za), plus legacy *-heterogeneous. */
 export function isHeterogeneousJobName(name: string): boolean {
-  return name.endsWith("-x-xz") || name.endsWith("-z-xz") || name.endsWith("-z-za");
+  return (
+    name.endsWith("-x-xz") ||
+    name.endsWith("-z-xz") ||
+    name.endsWith("-z-za") ||
+    name.endsWith("-heterogeneous")
+  );
 }
 
-export function heterogeneousTopology(name: string): "x-xz" | "z-xz" | "z-za" | null {
+export function heterogeneousTopology(
+  name: string,
+): "x-xz" | "z-xz" | "z-za" | "heterogeneous" | null {
   if (name.endsWith("-x-xz")) return "x-xz";
   if (name.endsWith("-z-xz")) return "z-xz";
   if (name.endsWith("-z-za")) return "z-za";
+  if (name.endsWith("-heterogeneous")) return "heterogeneous";
   return null;
 }
 

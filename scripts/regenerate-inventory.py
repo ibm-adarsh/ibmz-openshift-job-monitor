@@ -115,7 +115,12 @@ def collect_jobs(multiarch: Path) -> list[dict]:
             elif "techpreview" in job:
                 jtype = "techpreview"
             category = "old-profile"
-            if job.endswith("-x-xz") or job.endswith("-z-xz") or job.endswith("-z-za"):
+            if (
+                job.endswith("-x-xz")
+                or job.endswith("-z-xz")
+                or job.endswith("-z-za")
+                or job.endswith("-heterogeneous")
+            ):
                 category = "heterogeneous"
             elif "ibmcloud" in profile:
                 category = "ibmcloud"

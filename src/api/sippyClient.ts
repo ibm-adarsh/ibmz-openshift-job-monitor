@@ -74,6 +74,10 @@ async function fetchJsonWithRetry<T>(
       return (await res.json()) as T;
     } catch (e) {
       lastErr = e;
+      // Do not retry cancellations from AbortController (refresh / unmount).
+      if (signal?.aborted) {
+        throw e instanceof Error ? e : new Error(String(e));
+      }
       if (i < attempts - 1) {
         await new Promise((r) => setTimeout(r, 400 * (i + 1)));
       }

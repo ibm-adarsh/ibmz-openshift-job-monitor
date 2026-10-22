@@ -27,6 +27,7 @@ import { SyncAltIcon } from "@patternfly/react-icons";
 import "@patternfly/react-core/dist/styles/base.css";
 import { groupByVersion, loadInventoryJobs } from "./data/inventory";
 import { hydrateJobsLive, type LiveLoadProgress } from "./data/hydrateLive";
+import { isStreakFlaking } from "./utils/stats";
 import { JobFilters, type FilterState } from "./components/JobFilters";
 import { VersionSwimlane } from "./components/VersionSwimlane";
 import { JobDetailDrawer } from "./components/JobDetailDrawer";
@@ -160,6 +161,13 @@ function App() {
     return () => ac.abort();
   }, [inventory, reloadKey]);
 
+  // Keep the open drawer on the live job object after refresh/hydration.
+  useEffect(() => {
+    if (!selected) return;
+    const fresh = jobs.find((j) => j.id === selected.id);
+    if (fresh && fresh !== selected) setSelected(fresh);
+  }, [jobs, selected]);
+
   const handleToggleWatch = useCallback((id: string) => {
     setWatchlist((prev) => {
       const next = new Set(prev);
@@ -250,7 +258,9 @@ function App() {
       if (filters.ocpVersion !== "all" && job.ocpVersion !== filters.ocpVersion) return false;
       if (filters.failingOnly) {
         const terminal = job.latestTerminalOutcome ?? job.latestOutcome;
-        if (!["failure", "flaking", "aborted", "upgrade"].includes(terminal)) return false;
+        const failingTerminal = ["failure", "flaking", "aborted", "upgrade"].includes(terminal);
+        // Streak-flaking jobs still show as last-success; include them in Failing only.
+        if (!failingTerminal && !isStreakFlaking(job)) return false;
       }
       if (!q) return true;
       return (

@@ -79,7 +79,7 @@ npm run inventory
 
 ## What gets synced?
 
-Jobs from `openshift-multiarch-main__nightly-*.yaml` targeting **s390x / multi-z / libvirt-s390x** (Power excluded), for **OCP 4.13 through 5.x** only (older nightlies and 6.x+ are dropped). **Heterogeneous** = names ending in `-x-xz`, `-z-xz`, or `-z-za` (Z + arm64).
+Jobs from `openshift-multiarch-main__nightly-*.yaml` targeting **s390x / multi-z / libvirt-s390x** (Power excluded), for **OCP 4.13 through 5.x** only (older nightlies and 6.x+ are dropped). **Heterogeneous** = `-x-xz`, `-z-xz`, `-z-za` (Z + arm64), or legacy `-heterogeneous`.
 
 ---
 

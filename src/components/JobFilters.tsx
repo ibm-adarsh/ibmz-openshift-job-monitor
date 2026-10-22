@@ -42,7 +42,7 @@ const CATEGORIES: { id: JobCategory; label: string; tip?: string }[] = [
   {
     id: "heterogeneous",
     label: "Heterogeneous",
-    tip: "*-x-xz, *-z-xz, and *-z-za topologies (mixed arch + Z)",
+    tip: "*-x-xz, *-z-xz, *-z-za, and legacy *-heterogeneous (mixed arch + Z)",
   },
   { id: "upgrade", label: "Upgrade" },
 ];
