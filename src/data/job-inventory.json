@@ -253,15 +253,6 @@
   },
   {
     "ocpVersion": "4.17",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.17.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.17",
     "name": "ocp-e2e-ovn-remote-libvirt-s390x",
     "jobType": "e2e",
     "category": "vpn",
@@ -331,15 +322,6 @@
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.18-upgrade-from-nightly-4.17.yaml",
     "upgradeFrom": "4.17"
-  },
-  {
-    "ocpVersion": "4.18",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.18.yaml",
-    "upgradeFrom": null
   },
   {
     "ocpVersion": "4.18",
@@ -415,15 +397,6 @@
   },
   {
     "ocpVersion": "4.19",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.19.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.19",
     "name": "ocp-e2e-ovn-remote-libvirt-s390x",
     "jobType": "e2e",
     "category": "vpn",
@@ -493,15 +466,6 @@
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.20-upgrade-from-nightly-4.19.yaml",
     "upgradeFrom": "4.19"
-  },
-  {
-    "ocpVersion": "4.20",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.20.yaml",
-    "upgradeFrom": null
   },
   {
     "ocpVersion": "4.20",
@@ -577,15 +541,6 @@
   },
   {
     "ocpVersion": "4.21",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.21.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.21",
     "name": "ocp-e2e-ovn-remote-libvirt-s390x",
     "jobType": "e2e",
     "category": "vpn",
@@ -658,15 +613,6 @@
   },
   {
     "ocpVersion": "4.22",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.22.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.22",
     "name": "ocp-e2e-ovn-remote-libvirt-s390x",
     "jobType": "e2e",
     "category": "vpn",
@@ -736,15 +682,6 @@
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.23-upgrade-from-nightly-4.22.yaml",
     "upgradeFrom": "4.22"
-  },
-  {
-    "ocpVersion": "4.23",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.23.yaml",
-    "upgradeFrom": null
   },
   {
     "ocpVersion": "4.23",
@@ -826,15 +763,6 @@
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.0-upgrade-from-nightly-4.22.yaml",
     "upgradeFrom": "4.22"
-  },
-  {
-    "ocpVersion": "5.0",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.0.yaml",
-    "upgradeFrom": null
   },
   {
     "ocpVersion": "5.0",
@@ -925,15 +853,6 @@
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.1-upgrade-from-nightly-4.22.yaml",
     "upgradeFrom": "4.22"
-  },
-  {
-    "ocpVersion": "5.1",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-x-xz",
-    "jobType": "e2e",
-    "category": "heterogeneous",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.1.yaml",
-    "upgradeFrom": null
   },
   {
     "ocpVersion": "5.1",
@@ -1044,183 +963,12 @@
     "upgradeFrom": null
   },
   {
-    "ocpVersion": "4.16",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.16__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.17",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.17__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.18",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.18__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.19",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.19__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.20",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.20__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.20",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.20__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.21",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.21__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.21",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.21__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.21",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance-virt",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.21__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.22",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.22__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.22",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.22__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.22",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance-virt",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.22__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.22",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-openshifte2e-virt",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-4.22__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "5.0",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-5.0__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "5.0",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-5.0__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
     "ocpVersion": "5.0",
     "name": "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-oz",
     "jobType": "hypershift",
     "category": "hypershift",
     "clusterProfile": "libvirt-s390x-vpn-hcp",
     "configFile": "openshift/hypershift/openshift-hypershift-release-5.0__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "5.1",
-    "name": "e2e-ibmz-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "openshift-org-aws",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-5.1__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "5.1",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-5.1__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "5.1",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance-virt",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-5.1__periodics-mce.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "5.1",
-    "name": "e2e-ibmz-s390x-mgmt-ovn-openshifte2e-virt",
-    "jobType": "hypershift",
-    "category": "hypershift",
-    "clusterProfile": "unknown",
-    "configFile": "openshift/hypershift/openshift-hypershift-release-5.1__periodics-mce.yaml",
     "upgradeFrom": null
   }
 ]

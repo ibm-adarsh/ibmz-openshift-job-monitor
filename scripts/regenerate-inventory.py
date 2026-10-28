@@ -142,6 +142,8 @@ def collect_multiarch_jobs(multiarch: Path) -> list[dict]:
         text = f.read_text()
         for block in re.split(r"\n- as: ", text)[1:]:
             job = block.split("\n", 1)[0].strip()
+            if job in MULTIARCH_DENYLIST:
+                continue
             if not is_ibm_z_block(job, block):
                 continue
             pm = re.search(r"cluster_profile:\s*(\S+)", block)
@@ -163,8 +165,19 @@ def collect_multiarch_jobs(multiarch: Path) -> list[dict]:
     return jobs
 
 
+# Only this hypershift periodic is monitored for now (OCP 5.0 virt-oz).
+HYPERSHIFT_ALLOWLIST = {
+    ("5.0", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-oz"),
+}
+
+# Multiarch jobs excluded from monitoring across all OCP versions.
+MULTIARCH_DENYLIST = {
+    "ocp-e2e-ibmcloud-ovn-multi-x-xz",
+}
+
+
 def collect_hypershift_jobs(hypershift: Path) -> list[dict]:
-    """IBM Z / s390x jobs from hypershift release-*__periodics-mce.yaml configs."""
+    """Allowlisted hypershift IBM Z periodics only (see HYPERSHIFT_ALLOWLIST)."""
     jobs: list[dict] = []
     if not hypershift.is_dir():
         return jobs
@@ -179,10 +192,9 @@ def collect_hypershift_jobs(hypershift: Path) -> list[dict]:
         text = f.read_text()
         for block in re.split(r"\n- as: ", text)[1:]:
             job = block.split("\n", 1)[0].strip()
-            if not is_ibm_z_block(job, block):
+            if (ver, job) not in HYPERSHIFT_ALLOWLIST:
                 continue
-            # Exclude Power / non-Z leftovers that mention mixed markers.
-            if "power" in job and "ibmz" not in job and "s390x" not in job:
+            if not is_ibm_z_block(job, block):
                 continue
             pm = re.search(r"cluster_profile:\s*(\S+)", block)
             profile = pm.group(1) if pm else "unknown"
