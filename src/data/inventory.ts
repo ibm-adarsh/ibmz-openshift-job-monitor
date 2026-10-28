@@ -16,7 +16,20 @@ interface InventoryRow {
 
 export function parseVersion(v: string): { major: number; minor: number } {
   const [major, minor] = v.split(".").map(Number);
-  return { major, minor };
+  return {
+    major: Number.isFinite(major) ? major : Number.NaN,
+    minor: Number.isFinite(minor) ? minor : Number.NaN,
+  };
+}
+
+/** Keep in sync with scripts/regenerate-inventory.py (OCP 4.13–5.x). */
+export function isMonitoredOcpVersion(ver: string): boolean {
+  const { major, minor } = parseVersion(ver);
+  if (!Number.isFinite(major) || !Number.isFinite(minor)) return false;
+  if (major > 5) return false;
+  if (major < 4) return false;
+  if (major === 4 && minor < 13) return false;
+  return major === 4 || major === 5;
 }
 
 /** Heterogeneous Z jobs: x86↔Z (x-xz), Z↔x86 (z-xz), Z↔arm64 (z-za), plus legacy *-heterogeneous. */
@@ -44,7 +57,10 @@ function toCategory(
   row: InventoryRow,
 ): Exclude<JobCategory, "all"> {
   if (row.category === "upgrade" || row.upgradeFrom) return "upgrade";
-  if (isHeterogeneousJobName(row.name)) return "heterogeneous";
+  if (row.category === "hypershift" || row.jobType === "hypershift") return "hypershift";
+  if (isHeterogeneousJobName(row.name) || row.category === "heterogeneous") {
+    return "heterogeneous";
+  }
   return "homogeneous";
 }
 
@@ -57,23 +73,23 @@ function toJobType(raw: string): JobType {
     "upgrade",
     "agent",
     "techpreview",
+    "hypershift",
   ];
   return (allowed.includes(raw as JobType) ? raw : "e2e") as JobType;
 }
 
 export function loadInventoryJobs(): ZJob[] {
   return (inventory as InventoryRow[])
-    .filter((r) => {
-      const { major, minor } = parseVersion(r.ocpVersion);
-      // Keep in sync with scripts/regenerate-inventory.py (OCP 4.13–5.x).
-      if (major === 4 && minor >= 13) return true;
-      if (major === 5) return true;
-      return false;
-    })
+    .filter((r) => isMonitoredOcpVersion(r.ocpVersion))
     .map((row) => {
       const links = buildJobLinks(row.ocpVersion, row.configFile, row.name);
       const category = toCategory(row);
       const jobType = toJobType(row.jobType);
+      // Homogeneous e2e/serial + upgrades are release gates. Heterogeneous /
+      // hypershift jobs are watched but must not alone block readiness.
+      const requiredForRelease =
+        category === "homogeneous" &&
+        ["e2e", "upgrade", "serial"].includes(jobType);
       return {
         id: `${row.ocpVersion}::${row.name}::${row.configFile}`,
         name: row.name,
@@ -123,8 +139,10 @@ export function loadInventoryJobs(): ZJob[] {
               ? "z-upgrade"
               : category === "heterogeneous"
                 ? "z-hetero"
-                : "z-libvirt",
-        requiredForRelease: ["e2e", "upgrade", "serial"].includes(jobType),
+                : category === "hypershift"
+                  ? "z-hypershift"
+                  : "z-libvirt",
+        requiredForRelease,
         dataProvenance: "none" as const,
       };
     })
@@ -140,6 +158,7 @@ export function loadInventoryJobs(): ZJob[] {
 function versionHealth(jobs: ZJob[]): VersionHealth {
   const withData = jobs.filter((j) => j.dataProvenance !== "none");
   if (!withData.length) return "unknown";
+  // Align with computeReadiness: any blocked gate → red; otherwise flaking/non-gate fail → yellow.
   const critical = withData.filter(
     (j) =>
       j.requiredForRelease &&
@@ -148,12 +167,12 @@ function versionHealth(jobs: ZJob[]): VersionHealth {
         j.consecutiveFailures >= 3 ||
         j.neverPassed),
   );
-  if (critical.length >= 2) return "red";
+  if (critical.length >= 1) return "red";
   if (
-    critical.length === 1 ||
-    withData.some(
-      (j) => terminalOutcome(j) === "failure" || isStreakFlaking(j),
-    )
+    withData.some((j) => {
+      const t = terminalOutcome(j);
+      return t === "failure" || t === "upgrade" || isStreakFlaking(j);
+    })
   ) {
     return "yellow";
   }
@@ -189,7 +208,10 @@ export function groupByVersion(jobs: ZJob[]): VersionSummary[] {
         health: versionHealth(sorted),
         jobs: sorted,
         passing: sorted.filter((j) => terminalOutcome(j) === "success").length,
-        failing: sorted.filter((j) => terminalOutcome(j) === "failure").length,
+        failing: sorted.filter((j) => {
+          const t = terminalOutcome(j);
+          return t === "failure" || t === "upgrade";
+        }).length,
         flaking: sorted.filter((j) => isStreakFlaking(j)).length,
         running: sorted.filter((j) => isInFlightOutcome(j.latestOutcome)).length,
         noData: sorted.filter((j) => j.latestOutcome === "no-data").length,
@@ -208,7 +230,10 @@ export function summarize(jobs: ZJob[]) {
   return {
     total: jobs.length,
     passing: jobs.filter((j) => terminalOutcome(j) === "success").length,
-    failing: jobs.filter((j) => terminalOutcome(j) === "failure").length,
+    failing: jobs.filter((j) => {
+      const t = terminalOutcome(j);
+      return t === "failure" || t === "upgrade";
+    }).length,
     flaking: jobs.filter((j) => isStreakFlaking(j)).length,
     running: jobs.filter((j) => isInFlightOutcome(j.latestOutcome)).length,
     noData: jobs.filter((j) => j.latestOutcome === "no-data").length,

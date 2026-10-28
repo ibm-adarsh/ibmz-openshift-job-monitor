@@ -71,6 +71,7 @@ export function categoryCounts(jobs: ZJob[]) {
     homogeneous: jobs.filter((j) => j.category === "homogeneous").length,
     heterogeneous: jobs.filter((j) => j.category === "heterogeneous").length,
     upgrade: jobs.filter((j) => j.category === "upgrade").length,
+    hypershift: jobs.filter((j) => j.category === "hypershift").length,
   };
 }
 
@@ -118,7 +119,7 @@ export function fleetHeadline(
       tone: "danger",
       text: `${blocked} of ${versions.length} OCP versions are blocked`,
       detail:
-        "Blocked means at least one required release-gate job is failing, has 3+ consecutive failures, or has never passed. " +
+        "Blocked means at least one release-gate job (homogeneous e2e/serial or upgrade) is failing, has 3+ consecutive failures, or has never passed. " +
         `${ready} ready · ${atRisk} at risk · ${noData} without enough data.`,
     };
   }
@@ -135,7 +136,7 @@ export function fleetHeadline(
     return {
       tone: "success",
       text: `All ${ready} OCP versions look ready`,
-      detail: "Required release-gate jobs are currently healthy for every monitored version.",
+      detail: "Homogeneous e2e/serial and upgrade gate jobs are healthy for every monitored version.",
     };
   }
   if (ready > 0) {

@@ -32,7 +32,10 @@ export function severityRank(
 ): number {
   if (outcome === "no-data") return 6;
   if (neverPassed && outcome !== "success") return 0;
-  if (consecutiveFailures >= 3 || outcome === "failure") return 1;
+  // Upgrade failures are release-blocking — sort with hard failures, not success.
+  if (consecutiveFailures >= 3 || outcome === "failure" || outcome === "upgrade") {
+    return 1;
+  }
   if (outcome === "flaking" || outcome === "aborted") return 2;
   if (outcome === "running" || outcome === "pending") return 3;
   if (outcome === "unknown") return 4;

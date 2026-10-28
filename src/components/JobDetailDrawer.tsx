@@ -24,7 +24,7 @@ import {
   CopyIcon,
   CheckIcon,
 } from "@patternfly/react-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ZJob } from "../types";
 import { StatusLabel } from "./StatusLabel";
 import { RunSparkline } from "./RunSparkline";
@@ -83,6 +83,10 @@ interface JobDetailDrawerProps {
 
 export function JobDetailDrawer({ job, onClose, children }: JobDetailDrawerProps) {
   const [showAllRuns, setShowAllRuns] = useState(false);
+
+  useEffect(() => {
+    setShowAllRuns(false);
+  }, [job?.id]);
 
   const panel = job ? (
     <DrawerPanelContent widths={{ default: "width_33", xl: "width_25" }} minSize="360px">

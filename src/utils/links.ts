@@ -1,39 +1,61 @@
 /**
- * OpenShift CI link builders for multiarch / IBM Z periodics.
+ * OpenShift CI link builders for IBM Z periodics (multiarch + hypershift).
  *
  * Periodic naming (from ci-operator-prowgen):
- *   periodic-ci-openshift-multiarch-main-<variant>-<test-as-name>
+ *   periodic-ci-<org>-<repo>-<branch>-<variant>-<test-as-name>
  *
- * Config files:
- *   openshift-multiarch-main__<variant>.yaml
- *   e.g. openshift-multiarch-main__nightly-5.0.yaml
- *        openshift-multiarch-main__nightly-5.0-upgrade-from-nightly-4.22.yaml
+ * Config files (relative to ci-operator/config/):
+ *   openshift/multiarch/openshift-multiarch-main__nightly-5.0.yaml
+ *   openshift/hypershift/openshift-hypershift-release-5.0__periodics-mce.yaml
+ *
+ * Basename form `org-repo-branch__variant.yaml` is also accepted for
+ * backward compatibility with older inventory rows.
  */
 
-const GITHUB_RELEASE_MAIN =
-  "https://github.com/openshift/release/blob/main/ci-operator/config/openshift/multiarch";
+const GITHUB_CONFIG_ROOT =
+  "https://github.com/openshift/release/blob/main/ci-operator/config";
 const PROW_LOGS = "https://prow.ci.openshift.org/job-history/gs/test-platform-results/logs";
 const PROW_DECK = "https://prow.ci.openshift.org";
 const SIPPY = "https://sippy.dptools.openshift.org/sippy-ng";
 
-/** Extract ci-operator variant from generated config filename. */
-export function variantFromConfigFile(configFile: string): string {
-  const m = configFile.match(/openshift-multiarch-main__(.+)\.ya?ml$/);
-  if (m) return m[1];
-  // Fallback: nightly-<ver>
-  const n = configFile.match(/nightly-[\d.]+(?:-upgrade-from-(?:nightly|stable)-[\d.]+)?/);
-  return n ? n[0] : configFile.replace(/\.ya?ml$/, "");
+/** Basename of a config path (or the file itself). */
+export function configBasename(configFile: string): string {
+  const parts = configFile.split("/");
+  return parts[parts.length - 1] || configFile;
 }
 
-/** Full Prow periodic job name. */
+/**
+ * Path under ci-operator/config/ for GitHub links.
+ * Bare multiarch filenames default to openshift/multiarch/.
+ */
+export function configRepoPath(configFile: string): string {
+  if (configFile.includes("/")) return configFile;
+  return `openshift/multiarch/${configFile}`;
+}
+
+/** Extract ci-operator variant from generated config filename. */
+export function variantFromConfigFile(configFile: string): string {
+  const base = configBasename(configFile);
+  const m = base.match(/^(.+)__(.+)\.ya?ml$/);
+  if (m) return m[2];
+  const n = base.match(/nightly-[\d.]+(?:-upgrade-from-(?:nightly|stable)-[\d.]+)?/);
+  return n ? n[0] : base.replace(/\.ya?ml$/, "");
+}
+
+/** Full Prow periodic job name from config basename + test `as:` name. */
 export function periodicJobName(configFile: string, testName: string): string {
+  const base = configBasename(configFile);
+  const m = base.match(/^(.+)__(.+)\.ya?ml$/);
+  if (m) {
+    return `periodic-ci-${m[1]}-${m[2]}-${testName}`;
+  }
+  // Legacy multiarch-only fallback.
   const variant = variantFromConfigFile(configFile);
   return `periodic-ci-openshift-multiarch-main-${variant}-${testName}`;
 }
 
 export function configGithubUrl(configFile: string): string {
-  // openshift/release default branch is main (master redirects)
-  return `${GITHUB_RELEASE_MAIN}/${configFile}`;
+  return `${GITHUB_CONFIG_ROOT}/${configRepoPath(configFile)}`;
 }
 
 /** Always-valid history page (no build id required). */
@@ -57,7 +79,6 @@ export function prowBuildViewUrl(periodicName: string, buildId: string): string 
 
 export function sippyJobUrl(ocpVersion: string, configFile: string, testName: string): string {
   const job = periodicJobName(configFile, testName);
-  // Sippy job runs view for a release
   return `${SIPPY}/jobs/${encodeURIComponent(ocpVersion)}/runs?job=${encodeURIComponent(job)}`;
 }
 

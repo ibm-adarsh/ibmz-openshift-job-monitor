@@ -35,7 +35,9 @@ elif [[ -n "${RELEASE_ROOT:-}" ]]; then
 else
   echo "    Warning: no release clone found. Prefer:"
   echo "      git clone --depth 1 --filter=blob:none --sparse https://github.com/openshift/release.git .vendor/openshift-release"
-  echo "      (cd .vendor/openshift-release && git sparse-checkout set ci-operator/config/openshift/multiarch)"
+  echo "      (cd .vendor/openshift-release && git sparse-checkout set \\"
+  echo "        ci-operator/config/openshift/multiarch \\"
+  echo "        ci-operator/config/openshift/hypershift)"
   echo "    Or clone openshift/release as a sibling / set RELEASE_ROOT."
 fi
 python3 "$SCRIPT_DIR/regenerate-inventory.py"

@@ -280,7 +280,9 @@ function App() {
   const allVersionGroups = useMemo(() => groupByVersion(jobs), [jobs]);
   const liveCount = jobs.filter((j) => j.dataProvenance === "live").length;
   const partialCount = jobs.filter((j) => j.dataProvenance === "partial").length;
-  const failingCount = jobs.filter((j) => j.latestTerminalOutcome === "failure").length;
+  const failingCount = jobs.filter(
+    (j) => j.latestTerminalOutcome === "failure" || j.latestTerminalOutcome === "upgrade",
+  ).length;
   const runningCount = jobs.filter(
     (j) => j.latestOutcome === "running" || j.latestOutcome === "pending",
   ).length;

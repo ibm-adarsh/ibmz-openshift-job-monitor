@@ -39,7 +39,7 @@ interface FleetSummaryProps {
   autoRefreshSecs: number;
   onAutoRefreshChange: (secs: number) => void;
   onShowFailing: () => void;
-  onShowCategory: (category: "homogeneous" | "heterogeneous" | "upgrade") => void;
+  onShowCategory: (category: "homogeneous" | "heterogeneous" | "upgrade" | "hypershift") => void;
   onShowVersion: (version: string) => void;
   details: ReactNode;
 }
@@ -179,7 +179,9 @@ export function FleetSummary({
   const pass7 = useMemo(() => weightedPassRate(jobs, "7d"), [jobs]);
   const pass30 = useMemo(() => weightedPassRate(jobs, "30d"), [jobs]);
 
-  const failing = jobs.filter((j) => j.latestTerminalOutcome === "failure").length;
+  const failing = jobs.filter(
+    (j) => j.latestTerminalOutcome === "failure" || j.latestTerminalOutcome === "upgrade",
+  ).length;
   const flaking = jobs.filter((j) => isStreakFlaking(j)).length;
   const passing = jobs.filter((j) => j.latestTerminalOutcome === "success").length;
   const noData = jobs.filter((j) => j.dataProvenance === "none").length;
@@ -191,7 +193,8 @@ export function FleetSummary({
   const otherTerminal = jobs.filter((j) => {
     const t = j.latestTerminalOutcome;
     if (t == null) return false;
-    return t !== "success" && t !== "failure";
+    // failure/upgrade are counted under Failing; leave aborted/unknown/etc. here.
+    return t !== "success" && t !== "failure" && t !== "upgrade";
   }).length;
   const incomplete7 = jobs.filter(
     (j) => j.dataProvenance === "live" && !j.windowComplete7d && (j.runs7d ?? 0) > 0,
@@ -324,14 +327,14 @@ export function FleetSummary({
           <Stat
             value={failing}
             label="Last finished = fail"
-            meaning="Latest finished run failed. Click to open those jobs."
+            meaning="Latest finished run failed or hit an upgrade issue. Click to open those jobs."
             variant={failing > 0 ? "danger" : "default"}
             onClick={failing > 0 ? onShowFailing : undefined}
           />
           <Stat
             value={otherTerminal}
             label="Other terminal"
-            meaning="Latest finished run is neither pass nor fail (for example upgrade issue or aborted). This is why Last pass + Last fail may be lower than Have run history."
+            meaning="Latest finished run is neither pass, fail, nor upgrade issue (for example aborted or unknown)."
             variant="default"
           />
           <Stat
@@ -407,7 +410,7 @@ export function FleetSummary({
             ready
           </TermHint>
           {" · "}
-          <TermHint meaning="Gate jobs are the required checks used for release health (usually e2e, serial, and upgrade).">
+          <TermHint meaning="Gate jobs are homogeneous e2e/serial and upgrade checks used for release health (heterogeneous topologies are watched separately).">
             gate jobs
           </TermHint>
         </div>
@@ -464,6 +467,13 @@ export function FleetSummary({
                 tip="n→n+1 upgrade periodics"
                 onClick={() => onShowCategory("upgrade")}
                 family="upgrade"
+              />
+              <FamilyRow
+                label="Hypershift"
+                count={cats.hypershift}
+                tip="Hypershift / MCE IBM Z periodics"
+                onClick={() => onShowCategory("hypershift")}
+                family="hypershift"
               />
             </Flex>
           </div>
@@ -541,7 +551,7 @@ function FamilyRow({
   count: number;
   tip: string;
   onClick: () => void;
-  family: "homo" | "hetero" | "upgrade";
+  family: "homo" | "hetero" | "upgrade" | "hypershift";
 }) {
   return (
     <Tooltip content={`${tip} · click to filter Jobs`}>

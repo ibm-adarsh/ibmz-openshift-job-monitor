@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-Scan openshift/release multiarch nightly CI configs and write job-inventory.json.
+Scan openshift/release CI configs and write job-inventory.json.
 
-Monitors IBM Z (s390x) jobs for OCP 4.13 through 5.x only.
+Sources (OCP 4.13–5.x IBM Z only):
+  - openshift/multiarch nightly configs (s390x / multi-z / libvirt-s390x)
+  - openshift/hypershift release-*-periodics-mce IBM Z jobs
 
 Default release root (first match):
   .vendor/openshift-release  (gitignored local clone)
@@ -11,8 +13,7 @@ Default release root (first match):
 
 Override:
   RELEASE_ROOT=/path/to/release python3 scripts/regenerate-inventory.py
-  python3 scripts/regenerate-inventory.py --list          # print jobs, no write
-  python3 scripts/regenerate-inventory.py --release-root ../..
+  python3 scripts/regenerate-inventory.py --list
 """
 
 from __future__ import annotations
@@ -76,10 +77,60 @@ def resolve_release_root(explicit: str | None) -> Path:
     return (MONITOR_ROOT / ".vendor" / "openshift-release").resolve()
 
 
-def collect_jobs(multiarch: Path) -> list[dict]:
+def classify_multiarch_job(job: str, profile: str, config_name: str) -> tuple[str, str, str | None]:
+    jtype = "e2e"
+    if "upgrade" in job or "upgrade" in config_name:
+        jtype = "upgrade"
+    elif "serial" in job:
+        jtype = "serial"
+    elif "fips" in job:
+        jtype = "fips"
+    elif "image-ecosystem" in job:
+        jtype = "image-ecosystem"
+    elif "agent" in job:
+        jtype = "agent"
+    elif "techpreview" in job:
+        jtype = "techpreview"
+
+    category = "old-profile"
+    if (
+        job.endswith("-x-xz")
+        or job.endswith("-z-xz")
+        or job.endswith("-z-za")
+        or job.endswith("-heterogeneous")
+    ):
+        category = "heterogeneous"
+    elif "ibmcloud" in profile:
+        category = "ibmcloud"
+    elif "vpn" in profile:
+        category = "vpn"
+    elif "multi-z" in job or "amd64" in profile:
+        category = "old-profile"
+
+    upgrade_from = None
+    um = re.search(r"upgrade-from-(?:nightly|stable)-(\d+\.\d+)", config_name)
+    if um:
+        upgrade_from = um.group(1)
+        category = "upgrade"
+        jtype = "upgrade"
+    return jtype, category, upgrade_from
+
+
+def is_ibm_z_block(job: str, block: str) -> bool:
+    if "ppc64le" in job or "powervs" in job or "multi-p" in job or "power-" in job:
+        return False
+    markers = ("s390x", "multi-z", "libvirt-s390x", "ibmz")
+    if any(x in job for x in markers):
+        return True
+    if any(x in block for x in markers):
+        return True
+    return False
+
+
+def collect_multiarch_jobs(multiarch: Path) -> list[dict]:
     jobs: list[dict] = []
     if not multiarch.is_dir():
-        raise FileNotFoundError(f"Multiarch config dir not found: {multiarch}")
+        return jobs
 
     for f in sorted(multiarch.glob("openshift-multiarch-main__nightly-*.yaml")):
         m = re.search(r"nightly-(\d+\.\d+)", f.name)
@@ -91,49 +142,13 @@ def collect_jobs(multiarch: Path) -> list[dict]:
         text = f.read_text()
         for block in re.split(r"\n- as: ", text)[1:]:
             job = block.split("\n", 1)[0].strip()
-            if not any(x in block for x in ("s390x", "multi-z", "libvirt-s390x")) and not any(
-                x in job for x in ("s390x", "multi-z")
-            ):
-                continue
-            if "ppc64le" in job or "powervs" in job or "multi-p" in job:
+            if not is_ibm_z_block(job, block):
                 continue
             pm = re.search(r"cluster_profile:\s*(\S+)", block)
             profile = pm.group(1) if pm else "unknown"
             if "ppc" in profile:
                 continue
-            jtype = "e2e"
-            if "upgrade" in job or "upgrade" in f.name:
-                jtype = "upgrade"
-            elif "serial" in job:
-                jtype = "serial"
-            elif "fips" in job:
-                jtype = "fips"
-            elif "image-ecosystem" in job:
-                jtype = "image-ecosystem"
-            elif "agent" in job:
-                jtype = "agent"
-            elif "techpreview" in job:
-                jtype = "techpreview"
-            category = "old-profile"
-            if (
-                job.endswith("-x-xz")
-                or job.endswith("-z-xz")
-                or job.endswith("-z-za")
-                or job.endswith("-heterogeneous")
-            ):
-                category = "heterogeneous"
-            elif "ibmcloud" in profile:
-                category = "ibmcloud"
-            elif "vpn" in profile:
-                category = "vpn"
-            elif "multi-z" in job or "amd64" in profile:
-                category = "old-profile"
-            upgrade_from = None
-            um = re.search(r"upgrade-from-(?:nightly|stable)-(\d+\.\d+)", f.name)
-            if um:
-                upgrade_from = um.group(1)
-                category = "upgrade"
-                jtype = "upgrade"
+            jtype, category, upgrade_from = classify_multiarch_job(job, profile, f.name)
             jobs.append(
                 {
                     "ocpVersion": ver,
@@ -141,11 +156,53 @@ def collect_jobs(multiarch: Path) -> list[dict]:
                     "jobType": jtype,
                     "category": category,
                     "clusterProfile": profile,
-                    "configFile": f.name,
+                    "configFile": f"openshift/multiarch/{f.name}",
                     "upgradeFrom": upgrade_from,
                 }
             )
+    return jobs
 
+
+def collect_hypershift_jobs(hypershift: Path) -> list[dict]:
+    """IBM Z / s390x jobs from hypershift release-*__periodics-mce.yaml configs."""
+    jobs: list[dict] = []
+    if not hypershift.is_dir():
+        return jobs
+
+    for f in sorted(hypershift.glob("openshift-hypershift-release-*__periodics-mce.yaml")):
+        m = re.search(r"release-(\d+\.\d+)__", f.name)
+        if not m:
+            continue
+        ver = m.group(1)
+        if not is_monitored_ocp_version(ver):
+            continue
+        text = f.read_text()
+        for block in re.split(r"\n- as: ", text)[1:]:
+            job = block.split("\n", 1)[0].strip()
+            if not is_ibm_z_block(job, block):
+                continue
+            # Exclude Power / non-Z leftovers that mention mixed markers.
+            if "power" in job and "ibmz" not in job and "s390x" not in job:
+                continue
+            pm = re.search(r"cluster_profile:\s*(\S+)", block)
+            profile = pm.group(1) if pm else "unknown"
+            if "ppc" in profile:
+                continue
+            jobs.append(
+                {
+                    "ocpVersion": ver,
+                    "name": job,
+                    "jobType": "hypershift",
+                    "category": "hypershift",
+                    "clusterProfile": profile,
+                    "configFile": f"openshift/hypershift/{f.name}",
+                    "upgradeFrom": None,
+                }
+            )
+    return jobs
+
+
+def dedupe(jobs: list[dict]) -> list[dict]:
     seen: set[tuple] = set()
     out: list[dict] = []
     for j in jobs:
@@ -157,13 +214,26 @@ def collect_jobs(multiarch: Path) -> list[dict]:
     return out
 
 
+def collect_jobs(release_root: Path) -> list[dict]:
+    multiarch = release_root / "ci-operator/config/openshift/multiarch"
+    hypershift = release_root / "ci-operator/config/openshift/hypershift"
+    if not multiarch.is_dir() and not hypershift.is_dir():
+        raise FileNotFoundError(
+            f"Neither multiarch nor hypershift config dirs found under {release_root}"
+        )
+    return dedupe(collect_multiarch_jobs(multiarch) + collect_hypershift_jobs(hypershift))
+
+
 def print_summary(jobs: list[dict], release_root: Path) -> None:
     versions = Counter(j["ocpVersion"] for j in jobs)
     types = Counter(j["jobType"] for j in jobs)
     cats = Counter(j["category"] for j in jobs)
     print(f"Release root: {release_root}")
     print(f"Total IBM Z jobs: {len(jobs)}")
-    print(f"OCP versions ({len(versions)}): {', '.join(sorted(versions.keys(), key=lambda v: [int(x) for x in v.split('.')]))}")
+    print(
+        f"OCP versions ({len(versions)}): "
+        f"{', '.join(sorted(versions.keys(), key=lambda v: [int(x) for x in v.split('.')]))}"
+    )
     print("By job type:", ", ".join(f"{k}={v}" for k, v in sorted(types.items())))
     print("By inventory category:", ", ".join(f"{k}={v}" for k, v in sorted(cats.items())))
     print()
@@ -199,10 +269,9 @@ def main() -> None:
     args = parser.parse_args()
 
     release_root = resolve_release_root(args.release_root)
-    multiarch = release_root / "ci-operator/config/openshift/multiarch"
 
     try:
-        jobs = collect_jobs(multiarch)
+        jobs = collect_jobs(release_root)
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
         print(
@@ -215,11 +284,16 @@ def main() -> None:
             file=sys.stderr,
         )
         print(
-            "  (cd .vendor/openshift-release && "
-            "git sparse-checkout set ci-operator/config/openshift/multiarch)",
+            "  (cd .vendor/openshift-release && git sparse-checkout set "
+            "ci-operator/config/openshift/multiarch "
+            "ci-operator/config/openshift/hypershift)",
             file=sys.stderr,
         )
         print("  npm run inventory", file=sys.stderr)
+        sys.exit(1)
+
+    if not jobs:
+        print("Error: no IBM Z jobs found — check release checkout paths.", file=sys.stderr)
         sys.exit(1)
 
     if args.list:

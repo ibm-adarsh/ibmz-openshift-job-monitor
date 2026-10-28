@@ -19,6 +19,7 @@ const TYPES: JobType[] = [
   "upgrade",
   "agent",
   "techpreview",
+  "hypershift",
 ];
 
 const TYPE_LABEL: Record<JobType, string> = {
@@ -29,6 +30,7 @@ const TYPE_LABEL: Record<JobType, string> = {
   upgrade: "Upgrade",
   agent: "Agent",
   techpreview: "Tech preview",
+  hypershift: "Hypershift",
 };
 
 const TYPE_TIP: Record<JobType, string> = {
@@ -39,6 +41,7 @@ const TYPE_TIP: Record<JobType, string> = {
   upgrade: "Version upgrade tests (also shown in upgrade path below)",
   agent: "Agent-based install tests",
   techpreview: "Tech-preview feature tests",
+  hypershift: "Hypershift / MCE IBM Z conformance and virt periodics",
 };
 
 function cellTone(passRate: number | null, hasRuns: boolean): "good" | "mid" | "low" | "empty" {

@@ -16,16 +16,19 @@ export type JobType =
   | "image-ecosystem"
   | "upgrade"
   | "agent"
-  | "techpreview";
+  | "techpreview"
+  | "hypershift";
 
 /** High-level job family for filtering.
  * Heterogeneous = *-x-xz / *-z-xz / *-z-za / *-heterogeneous (not multi-z-z or s390x-only).
+ * Hypershift IBM Z MCE periodics are tracked separately from libvirt multiarch families.
  */
 export type JobCategory =
   | "all"
   | "homogeneous"
   | "heterogeneous"
-  | "upgrade";
+  | "upgrade"
+  | "hypershift";
 
 export type DataProvenance = "live" | "partial" | "none";
 

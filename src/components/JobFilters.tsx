@@ -45,6 +45,11 @@ const CATEGORIES: { id: JobCategory; label: string; tip?: string }[] = [
     tip: "*-x-xz, *-z-xz, *-z-za, and legacy *-heterogeneous (mixed arch + Z)",
   },
   { id: "upgrade", label: "Upgrade" },
+  {
+    id: "hypershift",
+    label: "Hypershift",
+    tip: "Hypershift / MCE IBM Z periodics (ibmz / s390x-mgmt)",
+  },
 ];
 
 const JOB_TYPES: Array<"all" | JobType> = [
@@ -56,6 +61,7 @@ const JOB_TYPES: Array<"all" | JobType> = [
   "upgrade",
   "agent",
   "techpreview",
+  "hypershift",
 ];
 
 const EMPTY: FilterState = {
@@ -193,7 +199,7 @@ export function JobFilters({ filters, onChange, availableVersions }: JobFiltersP
             </Tooltip>
           </ToolbarItem>
           <ToolbarItem>
-            <Tooltip content="Show only jobs required for release readiness (e2e, serial, upgrade).">
+            <Tooltip content="Homogeneous e2e/serial and upgrade jobs used for release readiness (heterogeneous topologies excluded).">
               <Checkbox
                 id="required-only"
                 label="Release gates only"

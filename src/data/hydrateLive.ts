@@ -198,7 +198,8 @@ export async function hydrateJobsLive(
   });
 
   const sippyByRelease = new Map<string, Map<string, SippyJobRow>>();
-  await mapPool(versions, 4, async (release, idx) => {
+  let sippyDone = 0;
+  await mapPool(versions, 4, async (release) => {
     try {
       const rows = await fetchSippyJobs(release, signal);
       const map = new Map<string, SippyJobRow>();
@@ -209,9 +210,10 @@ export async function hydrateJobsLive(
     } catch {
       sippyByRelease.set(release, new Map());
     }
+    sippyDone += 1;
     onProgress?.({
       phase: "Fetching Sippy job stats…",
-      done: idx + 1,
+      done: sippyDone,
       total: versions.length,
     });
   });
@@ -262,6 +264,8 @@ export async function hydrateJobsLive(
     const hasRuns = fullHistory.length > 0;
     const hasSippy = !!sippy;
 
+    // Sippy current_* is roughly the recent week — OK as 7d fallback when history is empty.
+    // Do NOT map Sippy previous_* onto 30d: previous is the prior period (~7d), not 30 days.
     const pass7d =
       s7.passRate ??
       (hasSippy && sippy?.current_runs && sippy.current_pass_percentage != null
@@ -275,19 +279,9 @@ export async function hydrateJobsLive(
       (runs7dVal != null && pass7d != null
         ? Math.round((runs7dVal * pass7d) / 100)
         : null);
-    const pass30d =
-      s30.passRate ??
-      (hasSippy && sippy?.previous_runs && sippy.previous_pass_percentage != null
-        ? Math.round(sippy.previous_pass_percentage * 10) / 10
-        : null);
-    const runs30dVal =
-      s30.total ??
-      (hasSippy && sippy?.previous_runs != null ? sippy.previous_runs : null);
-    const passes30dVal =
-      s30.passes ??
-      (runs30dVal != null && pass30d != null
-        ? Math.round((runs30dVal * pass30d) / 100)
-        : null);
+    const pass30d = s30.passRate;
+    const runs30dVal = s30.total;
+    const passes30dVal = s30.passes;
 
     return {
       ...job,

@@ -1090,6 +1090,12 @@ a:hover {
   color: var(--ibmz-warning-text);
 }
 
+.ibmz-family-row--hypershift {
+  border-color: var(--ibmz-teal-border, var(--ibmz-info-border));
+  background: linear-gradient(90deg, var(--ibmz-teal-soft, var(--ibmz-info-bg)) 0%, var(--ibmz-gradient-fade) 65%);
+  color: var(--ibmz-teal, var(--ibmz-info-text));
+}
+
 .ibmz-version-chip {
   border-radius: 8px !important;
   border: 1px solid var(--ibmz-border) !important;

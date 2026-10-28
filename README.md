@@ -22,7 +22,9 @@ mkdir -p .vendor
 git clone --depth 1 --filter=blob:none --sparse \
   https://github.com/openshift/release.git .vendor/openshift-release
 cd .vendor/openshift-release
-git sparse-checkout set ci-operator/config/openshift/multiarch
+git sparse-checkout set \
+  ci-operator/config/openshift/multiarch \
+  ci-operator/config/openshift/hypershift
 cd ../..
 ```
 
@@ -81,7 +83,10 @@ npm run inventory
 
 ## What gets synced?
 
-Jobs from `openshift-multiarch-main__nightly-*.yaml` targeting **s390x / multi-z / libvirt-s390x** (Power excluded), for **OCP 4.13 through 5.x** only (older nightlies and 6.x+ are dropped). **Heterogeneous** = `-x-xz`, `-z-xz`, `-z-za` (Z + arm64), or legacy `-heterogeneous`.
+Jobs for **OCP 4.13 through 5.x** (Power excluded):
+
+- **Multiarch** nightlies (`openshift-multiarch-main__nightly-*.yaml`) targeting **s390x / multi-z / libvirt-s390x**. **Heterogeneous** = `-x-xz`, `-z-xz`, `-z-za` (Z + arm64), or legacy `-heterogeneous`.
+- **Hypershift / MCE** IBM Z periodics (`openshift-hypershift-release-*__periodics-mce.yaml`, e.g. `e2e-ibmz-s390x-mgmt-ovn-conformance-virt-oz`).
 
 ---
 

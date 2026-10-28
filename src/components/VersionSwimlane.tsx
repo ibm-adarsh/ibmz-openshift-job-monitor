@@ -26,7 +26,7 @@ const HEALTH_LABEL = {
 const HEALTH_TIP = {
   green: "No critical release-gate failures for this OCP version.",
   yellow: "Some failures or flaking on watched jobs — needs attention.",
-  red: "Multiple critical gate failures for this OCP version.",
+  red: "One or more critical release-gate failures for this OCP version.",
   unknown: "Not enough live CI data yet to score this version.",
 } as const;
 
