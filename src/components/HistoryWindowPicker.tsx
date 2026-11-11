@@ -87,7 +87,7 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
               {l.text}
             </Label>
           ))}
-          <Tooltip content="Pass meter: green ≥85% · amber ≥60% · red <60%">
+          <Tooltip content="Pass meter: green ≥60% · amber 40–59% · red <40%">
             <span
               style={{
                 fontSize: "var(--pf-t--global--font--size--xs)",
@@ -96,7 +96,7 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
                 borderBottom: "1px dashed var(--pf-t--global--text--color--subtle)",
               }}
             >
-              Pass %: ≥85 green · ≥60 amber · &lt;60 red
+              Pass %: ≥60 green · 40–59 amber · &lt;40 red
             </span>
           </Tooltip>
         </Flex>

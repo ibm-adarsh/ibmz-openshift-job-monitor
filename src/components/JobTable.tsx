@@ -234,7 +234,7 @@ export function JobTable({
               </Tooltip>
             </Th>
             <Th modifier="nowrap" style={{ width: "12rem", minWidth: "11rem" }}>
-              <Tooltip content="Passed/Total %. Green ≥85%, amber ≥60%, red <60%. Aborted runs are excluded.">
+              <Tooltip content="Passed/Total %. Green ≥60%, amber 40–59%, red <40%. Aborted runs are excluded.">
                 <span className="ibmz-th-hint">Pass rate</span>
               </Tooltip>
             </Th>

@@ -163,7 +163,7 @@ export function UpgradeChain({ versions, onShowVersion }: UpgradeChainProps) {
                   {passPct != null && hop.pass ? (
                     <>
                       <div
-                        className={`ibmz-upgrade-pass-value${passPct >= 85 ? " ibmz-upgrade-pass-value--good" : passPct >= 60 ? " ibmz-upgrade-pass-value--mid" : " ibmz-upgrade-pass-value--low"}`}
+                        className={`ibmz-upgrade-pass-value${passPct >= 60 ? " ibmz-upgrade-pass-value--good" : passPct >= 40 ? " ibmz-upgrade-pass-value--mid" : " ibmz-upgrade-pass-value--low"}`}
                       >
                         {passPct}%
                       </div>

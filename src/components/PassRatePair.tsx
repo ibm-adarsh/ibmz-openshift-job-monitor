@@ -2,8 +2,8 @@ import { Progress, ProgressSize, ProgressMeasureLocation, Tooltip } from "@patte
 
 function toneFor(pct: number | null): "success" | "warning" | "danger" | undefined {
   if (pct == null) return undefined;
-  if (pct >= 85) return "success";
-  if (pct >= 60) return "warning";
+  if (pct >= 60) return "success";
+  if (pct >= 40) return "warning";
   return "danger";
 }
 
@@ -25,7 +25,7 @@ interface PassRateMeterProps {
   complete?: boolean;
 }
 
-/** Single labeled pass-rate meter — green ≥85%, amber ≥60%, red below. */
+/** Single labeled pass-rate meter — green ≥60%, amber 40–59%, red below 40%. */
 export function PassRateMeter({
   label,
   passRate,
@@ -40,9 +40,9 @@ export function PassRateMeter({
   const valueClass =
     passRate == null
       ? "ibmz-pass-meter-value--muted"
-      : passRate >= 85
+      : passRate >= 60
         ? "ibmz-pass-meter-value--good"
-        : passRate >= 60
+        : passRate >= 40
           ? "ibmz-pass-meter-value--mid"
           : "ibmz-pass-meter-value--low";
   const tip = [

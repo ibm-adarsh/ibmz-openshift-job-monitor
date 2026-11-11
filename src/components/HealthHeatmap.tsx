@@ -46,8 +46,8 @@ const TYPE_TIP: Record<JobType, string> = {
 
 function cellTone(passRate: number | null, hasRuns: boolean): "good" | "mid" | "low" | "empty" {
   if (!hasRuns || passRate == null) return "empty";
-  if (passRate >= 85) return "good";
-  if (passRate >= 60) return "mid";
+  if (passRate >= 60) return "good";
+  if (passRate >= 40) return "mid";
   return "low";
 }
 
@@ -88,9 +88,9 @@ export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmap
             needs attention.
           </Content>
           <Flex gap={{ default: "gapMd" }} flexWrap={{ default: "wrap" }} className="ibmz-legend-row">
-            <LegendItem tone="good" label="Healthy — 85% or higher" />
-            <LegendItem tone="mid" label="Watch — 60% to 84%" />
-            <LegendItem tone="low" label="At risk — below 60%" />
+            <LegendItem tone="good" label="Healthy — 60% or higher" />
+            <LegendItem tone="mid" label="Watch — 40% to 59%" />
+            <LegendItem tone="low" label="At risk — below 40%" />
             <LegendItem tone="empty" label="No runs in 30 days" />
           </Flex>
         </Flex>
