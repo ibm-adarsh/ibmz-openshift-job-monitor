@@ -32,20 +32,22 @@ export function isMonitoredOcpVersion(ver: string): boolean {
   return major === 4 || major === 5;
 }
 
-/** Heterogeneous Z jobs: x86↔Z (x-xz), Z↔x86 (z-xz), Z↔arm64 (z-za), plus legacy *-heterogeneous. */
+/** Heterogeneous Z jobs: x86↔Z (x-xz), Z↔x86 (z-zx / legacy z-xz), Z↔arm64 (z-za), plus legacy *-heterogeneous. */
 export function isHeterogeneousJobName(name: string): boolean {
   return (
     name.endsWith("-x-xz") ||
+    name.endsWith("-z-zx") ||
     name.endsWith("-z-xz") ||
     name.endsWith("-z-za") ||
     name.endsWith("-heterogeneous")
   );
 }
 
-export function heterogeneousTopology(
-  name: string,
-): "x-xz" | "z-xz" | "z-za" | "heterogeneous" | null {
+export type HeterogeneousTopology = "x-xz" | "z-zx" | "z-xz" | "z-za" | "heterogeneous";
+
+export function heterogeneousTopology(name: string): HeterogeneousTopology | null {
   if (name.endsWith("-x-xz")) return "x-xz";
+  if (name.endsWith("-z-zx")) return "z-zx";
   if (name.endsWith("-z-xz")) return "z-xz";
   if (name.endsWith("-z-za")) return "z-za";
   if (name.endsWith("-heterogeneous")) return "heterogeneous";

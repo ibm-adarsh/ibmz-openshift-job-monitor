@@ -96,6 +96,7 @@ def classify_multiarch_job(job: str, profile: str, config_name: str) -> tuple[st
     if (
         job.endswith("-x-xz")
         or job.endswith("-z-xz")
+        or job.endswith("-z-zx")
         or job.endswith("-z-za")
         or job.endswith("-heterogeneous")
     ):
@@ -165,9 +166,10 @@ def collect_multiarch_jobs(multiarch: Path) -> list[dict]:
     return jobs
 
 
-# Only this hypershift periodic is monitored for now (OCP 5.0 virt-oz).
+# Hypershift virt-z-z periodics (formerly virt-oz) on current OCP 5.x.
 HYPERSHIFT_ALLOWLIST = {
-    ("5.0", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-oz"),
+    ("5.0", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z"),
+    ("5.1", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z"),
 }
 
 # Multiarch jobs excluded from monitoring across all OCP versions.

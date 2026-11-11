@@ -20,7 +20,7 @@ export type JobType =
   | "hypershift";
 
 /** High-level job family for filtering.
- * Heterogeneous = *-x-xz / *-z-xz / *-z-za / *-heterogeneous (not multi-z-z or s390x-only).
+ * Heterogeneous = *-x-xz / *-z-zx / legacy *-z-xz / *-z-za / *-heterogeneous (not multi-z-z or s390x-only).
  * Hypershift IBM Z MCE periodics are tracked separately from libvirt multiarch families.
  */
 export type JobCategory =

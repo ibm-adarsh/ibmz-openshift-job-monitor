@@ -58,9 +58,10 @@ function rowBg(job: ZJob): string | undefined {
   return undefined;
 }
 
-const TOPOLOGY_TIP: Record<"x-xz" | "z-xz" | "z-za" | "heterogeneous", string> = {
+const TOPOLOGY_TIP: Record<"x-xz" | "z-zx" | "z-xz" | "z-za" | "heterogeneous", string> = {
   "x-xz": "x86 control plane + Z workers",
-  "z-xz": "Z control plane + x86 workers",
+  "z-zx": "Z control plane + x86 workers (day-2)",
+  "z-xz": "Legacy Z control plane + x86 workers (*-z-xz)",
   "z-za": "Z control plane + arm64 workers",
   heterogeneous: "Legacy mixed-arch Z job (*-heterogeneous)",
 };

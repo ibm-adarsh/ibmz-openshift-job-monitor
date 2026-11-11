@@ -131,6 +131,11 @@ export function JobDetailDrawer({ job, onClose, children }: JobDetailDrawerProps
                   x-xz
                 </Label>
               )}
+              {job.name.endsWith("-z-zx") && (
+                <Label isCompact color="purple">
+                  z-zx
+                </Label>
+              )}
               {job.name.endsWith("-z-xz") && (
                 <Label isCompact color="purple">
                   z-xz
