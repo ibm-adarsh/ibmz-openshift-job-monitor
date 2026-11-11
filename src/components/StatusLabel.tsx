@@ -17,15 +17,16 @@ interface OutcomeMeta {
 }
 
 const META: Record<JobOutcome, OutcomeMeta> = {
-  success:   { text: "Success",      color: "green",  icon: <CheckCircleIcon /> },
-  failure:   { text: "Failure",      color: "red",    icon: <TimesCircleIcon /> },
-  flaking:   { text: "Flaking",      color: "orange", icon: <ExclamationTriangleIcon /> },
-  upgrade:   { text: "Upgrade issue", color: "purple", icon: <TimesCircleIcon /> },
-  running:   { text: "Running",      color: "blue",   icon: <SyncAltIcon /> },
-  aborted:   { text: "Aborted",      color: "grey",   icon: <BanIcon /> },
-  pending:   { text: "Pending",      color: "yellow", icon: <PauseCircleIcon /> },
-  unknown:   { text: "Unknown",      color: "grey",   icon: <UnknownIcon /> },
-  "no-data": { text: "No history",   color: "grey",   icon: <UnknownIcon /> },
+  success:   { text: "Success",       color: "green", icon: <CheckCircleIcon /> },
+  failure:   { text: "Failure",       color: "red",   icon: <TimesCircleIcon /> },
+  // Upgrade / flake failures share the red fail colour (no violet/amber status).
+  flaking:   { text: "Failure",       color: "red",   icon: <TimesCircleIcon /> },
+  upgrade:   { text: "Failure",       color: "red",   icon: <TimesCircleIcon /> },
+  running:   { text: "Running",       color: "blue",  icon: <SyncAltIcon /> },
+  aborted:   { text: "Aborted",       color: "grey",  icon: <BanIcon /> },
+  pending:   { text: "Pending",       color: "yellow", icon: <PauseCircleIcon /> },
+  unknown:   { text: "Unknown",       color: "grey",  icon: <UnknownIcon /> },
+  "no-data": { text: "No history",    color: "grey",  icon: <UnknownIcon /> },
 };
 
 const PULSE_STYLE = `

@@ -78,7 +78,6 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
             [
               { color: "green", text: "Success" },
               { color: "red", text: "Failure" },
-              { color: "orange", text: "Flaking" },
               { color: "blue", text: "Running" },
               { color: "grey", text: "Aborted/no-data" },
             ] as const

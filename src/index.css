@@ -68,8 +68,9 @@
   /* —— Run sparkline bars (vivid but readable) —— */
   --ibmz-spark-success: #198038;
   --ibmz-spark-failure: #da1e28;
-  --ibmz-spark-flaking: #c97a00;
-  --ibmz-spark-upgrade: #6929c4;
+  /* Flake/upgrade outcomes render as fail (red) — keep vars aliased for safety. */
+  --ibmz-spark-flaking: var(--ibmz-spark-failure);
+  --ibmz-spark-upgrade: var(--ibmz-spark-failure);
   --ibmz-spark-running: #0062d1;
   --ibmz-spark-aborted: #8d99ae;
   --ibmz-spark-pending: #d97706;
@@ -172,8 +173,8 @@
 
   --ibmz-spark-success: #42be65;
   --ibmz-spark-failure: #fa4d56;
-  --ibmz-spark-flaking: #f1c21b;
-  --ibmz-spark-upgrade: #a56eff;
+  --ibmz-spark-flaking: var(--ibmz-spark-failure);
+  --ibmz-spark-upgrade: var(--ibmz-spark-failure);
   --ibmz-spark-running: #78a9ff;
   --ibmz-spark-aborted: #6d7d92;
   --ibmz-spark-pending: #f5a623;

@@ -53,8 +53,9 @@ function JobFamilyLabels({ job }: { job: ZJob }) {
 
 function rowBg(job: ZJob): string | undefined {
   const outcome = displayOutcomeForRow(job);
-  if (outcome === "failure" || outcome === "upgrade") return "var(--ibmz-danger-soft)";
-  if (outcome === "flaking") return "var(--ibmz-warning-soft)";
+  if (outcome === "failure" || outcome === "upgrade" || outcome === "flaking") {
+    return "var(--ibmz-danger-soft)";
+  }
   return undefined;
 }
 

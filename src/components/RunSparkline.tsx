@@ -1,10 +1,11 @@
 import type { JobOutcome, RunHistoryEntry } from "../types";
 
+/** Finished runs are only green (pass) or red (fail). Upgrade/flake failures count as fail. */
 const COLOR: Record<JobOutcome, string> = {
   success: "var(--ibmz-spark-success)",
   failure: "var(--ibmz-spark-failure)",
-  flaking: "var(--ibmz-spark-flaking)",
-  upgrade: "var(--ibmz-spark-upgrade)",
+  flaking: "var(--ibmz-spark-failure)",
+  upgrade: "var(--ibmz-spark-failure)",
   running: "var(--ibmz-spark-running)",
   aborted: "var(--ibmz-spark-aborted)",
   pending: "var(--ibmz-spark-pending)",
