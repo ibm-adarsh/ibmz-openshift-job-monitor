@@ -243,8 +243,8 @@ export function JobTable({
               <Tooltip
                 content={
                   showLastN
-                    ? "Bars for the last 7 runs — newest on the left, older on the right (outlined bar = newest)"
-                    : "Bars for runs in the last 30 days"
+                    ? "Bars for the last 7 runs — newest on the left, older on the right. Click a bar to open that run in CI Analyzer."
+                    : "Bars for runs in the last 30 days. Click a bar to open that run in CI Analyzer."
                 }
               >
                 <span className="ibmz-th-hint">Runs</span>

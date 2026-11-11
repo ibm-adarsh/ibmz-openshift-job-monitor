@@ -77,6 +77,34 @@ export function prowBuildViewUrl(periodicName: string, buildId: string): string 
   return `https://prow.ci.openshift.org/view/gs/test-platform-results/logs/${periodicName}/${buildId}`;
 }
 
+const CI_ANALYZER_EXECUTION =
+  "https://ibm-adarsh.github.io/ci-analyzer/execution";
+
+/**
+ * Map a Prow build view URL to the IBM Z CI Analyzer deep link.
+ *
+ * Prow:     …/view/gs/{bucket}/logs/{job}/{id}
+ * Analyzer: …/ci-analyzer/execution/{bucket}/logs%2F{job}%2F{id}
+ *
+ * Non-public `test-platform-results` buckets are rewritten to
+ * `test-platform-results-public` (what the analyzer expects).
+ */
+export function ciAnalyzerExecutionUrl(prowUrl: string): string | null {
+  try {
+    const u = new URL(prowUrl);
+    const m = u.pathname.match(/^\/view\/gs\/([^/]+)\/(.+)$/);
+    if (!m) return null;
+    let bucket = decodeURIComponent(m[1]);
+    const objectPath = decodeURIComponent(m[2]);
+    if (bucket === "test-platform-results") {
+      bucket = "test-platform-results-public";
+    }
+    return `${CI_ANALYZER_EXECUTION}/${bucket}/${encodeURIComponent(objectPath)}`;
+  } catch {
+    return null;
+  }
+}
+
 export function sippyJobUrl(ocpVersion: string, configFile: string, testName: string): string {
   const job = periodicJobName(configFile, testName);
   return `${SIPPY}/jobs/${encodeURIComponent(ocpVersion)}/runs?job=${encodeURIComponent(job)}`;

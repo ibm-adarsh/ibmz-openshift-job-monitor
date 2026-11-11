@@ -1,4 +1,5 @@
 import type { JobOutcome, RunHistoryEntry } from "../types";
+import { ciAnalyzerExecutionUrl } from "../utils/links";
 
 /** Finished runs are only green (pass) or red (fail). Upgrade/flake failures count as fail. */
 const COLOR: Record<JobOutcome, string> = {
@@ -78,21 +79,25 @@ export function RunSparkline({
         {runs.map((run, idx) => {
           const isRunning = run.outcome === "running" || run.outcome === "pending";
           const isNewest = idx === 0;
+          const analyzerUrl = ciAnalyzerExecutionUrl(run.prowUrl);
+          const href = analyzerUrl ?? run.prowUrl;
           const tip = [
             run.outcome.toUpperCase(),
             fmt(run.startedAt),
             run.durationMinutes != null ? `${run.durationMinutes}m` : null,
             run.rawResult ? `raw: ${run.rawResult}` : null,
+            analyzerUrl ? "Open in CI Analyzer" : "Open in Prow",
           ]
             .filter(Boolean)
             .join(" · ");
           return (
             <a
               key={run.id}
-              href={run.prowUrl}
+              href={href}
               target="_blank"
               rel="noreferrer"
               title={tip}
+              aria-label={`${run.outcome} run — open in CI Analyzer`}
               style={{
                 width: 12,
                 height: 24,
