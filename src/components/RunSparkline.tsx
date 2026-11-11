@@ -38,7 +38,7 @@ interface RunSparklineProps {
   maxRuns?: number;
   /** Total fetched before windowing (for “showing N of M”). */
   totalFetched?: number;
-  /** Show "oldest … newest →" axis label */
+  /** Show oldest-run date on the right (newest is leftmost). */
   showAxis?: boolean;
 }
 
@@ -48,11 +48,11 @@ export function RunSparkline({
   totalFetched,
   showAxis = false,
 }: RunSparklineProps) {
-  // history[0] = newest; reverse so oldest is leftmost
+  // history[0] = newest; keep that order so newest is leftmost
   const windowed = history;
-  const runs = [...windowed].slice(0, maxRuns).reverse();
-  const newestOutcome = runs[runs.length - 1]?.outcome;
-  const oldestDate = runs[0] ? fmt(runs[0].startedAt) : null;
+  const runs = windowed.slice(0, maxRuns);
+  const newestOutcome = runs[0]?.outcome;
+  const oldestDate = runs.length ? fmt(runs[runs.length - 1].startedAt) : null;
   const shown = runs.length;
   const total = totalFetched ?? windowed.length;
 
@@ -60,11 +60,23 @@ export function RunSparkline({
     <div>
       <div
         style={{ display: "flex", gap: 2, alignItems: "flex-end" }}
-        aria-label={`Last ${runs.length} run outcomes`}
+        aria-label={`Last ${runs.length} run outcomes, newest on the left`}
       >
+        {newestOutcome === "running" && (
+          <span
+            style={{
+              marginRight: 4,
+              fontSize: "var(--pf-t--global--font--size--xs)",
+              color: "var(--ibmz-info-strong)",
+              fontWeight: 600,
+            }}
+          >
+            LIVE
+          </span>
+        )}
         {runs.map((run, idx) => {
           const isRunning = run.outcome === "running" || run.outcome === "pending";
-          const isNewest = idx === runs.length - 1;
+          const isNewest = idx === 0;
           const tip = [
             run.outcome.toUpperCase(),
             fmt(run.startedAt),
@@ -96,18 +108,6 @@ export function RunSparkline({
             />
           );
         })}
-        {newestOutcome === "running" && (
-          <span
-            style={{
-              marginLeft: 4,
-              fontSize: "var(--pf-t--global--font--size--xs)",
-              color: "var(--ibmz-info-strong)",
-              fontWeight: 600,
-            }}
-          >
-            LIVE
-          </span>
-        )}
       </div>
       <div
         style={{
@@ -121,7 +121,7 @@ export function RunSparkline({
       >
         <span>
           {shown < total ? `Showing ${shown} of ${total}` : `${shown} run${shown === 1 ? "" : "s"}`}
-          {" · newest →"}
+          {" · ← newest"}
         </span>
         {showAxis && oldestDate && <span>{oldestDate}</span>}
       </div>

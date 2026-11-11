@@ -85,6 +85,7 @@ function ConsecutiveBadge({ job }: { job: ZJob }) {
       <span style={{ color: "var(--pf-t--global--text--color--subtle)" }}>—</span>
     );
   }
+  // Streak uses only red (failed) or green (passed) — no amber/orange.
   if (job.neverPassed) {
     return (
       <Tooltip content="Sippy has no recorded last_pass for this job — it has never gone green in Sippy’s view.">
@@ -97,40 +98,29 @@ function ConsecutiveBadge({ job }: { job: ZJob }) {
   if (job.noGreenInLoadedRuns && !job.lastSuccessAt) {
     return (
       <Tooltip content="No successful run in the loaded history window (does not prove the job never passed).">
-        <Label color="orange" isCompact>
+        <Label color="red" isCompact>
           No green in loaded runs
         </Label>
       </Tooltip>
     );
   }
-  if (job.consecutiveFailures >= 3) {
+  if (job.consecutiveFailures > 0) {
     return (
       <Label color="red" isCompact>
         {job.consecutiveFailures}× fail
       </Label>
     );
   }
-  if (job.consecutiveFailures > 0) {
-    return (
-      <Label color="orange" isCompact>
-        {job.consecutiveFailures}× fail
-      </Label>
-    );
-  }
-  const flaking = isStreakFlaking(job);
-  if (flaking) {
+  if (isStreakFlaking(job)) {
     const tip =
       `Last finished run passed, but pass rate is ≤${STREAK_FLAKE_PASS_RATE_THRESHOLD}% in the last 7 or 30 days ` +
       `(7d: ${job.passRate7d ?? "—"}% · 30d: ${job.passRate30d ?? "—"}%).`;
     return (
-      <Flex direction={{ default: "column" }} gap={{ default: "gapXs" }}>
-        <Label color="green" isCompact>OK</Label>
-        <Tooltip content={tip}>
-          <Label color="orange" isCompact style={{ cursor: "help" }}>
-            Flaking
-          </Label>
-        </Tooltip>
-      </Flex>
+      <Tooltip content={tip}>
+        <Label color="green" isCompact style={{ cursor: "help" }}>
+          OK
+        </Label>
+      </Tooltip>
     );
   }
   return (
@@ -252,7 +242,7 @@ export function JobTable({
               <Tooltip
                 content={
                   showLastN
-                    ? "Bars for the last 10 runs — oldest on the left, newest on the right (outlined bar = newest)"
+                    ? "Bars for the last 10 runs — newest on the left, older on the right (outlined bar = newest)"
                     : "Bars for runs in the last 30 days"
                 }
               >
