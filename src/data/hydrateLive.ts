@@ -15,7 +15,7 @@ import {
 } from "../api/prowClient";
 
 const DAY = 86_400_000;
-const LAST_N = 10;
+const LAST_N = 7;
 const SIPPY_PER_PAGE = 100;
 
 function isInFlight(outcome: RunHistoryEntry["outcome"]): boolean {
@@ -123,7 +123,7 @@ export function applyHistoryWindow(
   history: RunHistoryEntry[],
   window: HistoryWindow,
 ): RunHistoryEntry[] {
-  if (window === "last-10") return history.slice(0, LAST_N);
+  if (window === "last-7") return history.slice(0, LAST_N);
   const since = Date.now() - 30 * DAY;
   return history.filter((r) => {
     const t = new Date(r.startedAt).getTime();

@@ -8,7 +8,7 @@ interface HistoryWindowPickerProps {
 }
 
 /**
- * Compact inline strip that lets users switch between "last 10 runs" and
+ * Compact inline strip that lets users switch between "last 7 runs" and
  * "last 30 days" history mode. Also shows the sparkline legend.
  */
 export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindowPickerProps) {
@@ -29,9 +29,9 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
           <span className="ibmz-history-strip-label">Runs column:</span>
           <ToggleGroup aria-label="History window" isCompact>
             <ToggleGroupItem
-              text="Last 10 Runs"
-              isSelected={value === "last-10"}
-              onChange={() => onChange("last-10")}
+              text="Last 7 Runs"
+              isSelected={value === "last-7"}
+              onChange={() => onChange("last-7")}
               isDisabled={disabled}
             />
             <ToggleGroupItem

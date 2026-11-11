@@ -188,7 +188,7 @@ export function JobTable({
   onToggleWatch,
   historyWindow,
 }: JobTableProps) {
-  const showLastN = historyWindow === "last-10";
+  const showLastN = historyWindow === "last-7";
   const scrollRef = useRef<HTMLDivElement>(null);
   const [headerStuck, setHeaderStuck] = useState(false);
 
@@ -243,7 +243,7 @@ export function JobTable({
               <Tooltip
                 content={
                   showLastN
-                    ? "Bars for the last 10 runs — newest on the left, older on the right (outlined bar = newest)"
+                    ? "Bars for the last 7 runs — newest on the left, older on the right (outlined bar = newest)"
                     : "Bars for runs in the last 30 days"
                 }
               >

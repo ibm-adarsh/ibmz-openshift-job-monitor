@@ -36,7 +36,7 @@ export type DataProvenance = "live" | "partial" | "none";
 export type LastSuccessSource = "history" | "sippy" | null;
 
 /** How much run history to show in the sparkline (display only). */
-export type HistoryWindow = "last-10" | "last-30-days";
+export type HistoryWindow = "last-7" | "last-30-days";
 
 export interface RunHistoryEntry {
   id: string;

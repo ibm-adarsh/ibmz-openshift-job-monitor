@@ -124,11 +124,11 @@ export function PassRatePair({
     <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 140 }}>
       {showLastN && (
         <PassRateMeter
-          label={`Last ${lastN ?? 10} Runs`}
+          label={`Last ${lastN ?? 7} Runs`}
           passRate={passRateLastN ?? null}
           passes={passesLastN}
           total={lastN}
-          hint={`Passed runs out of the most recent ${lastN ?? 10} counted runs`}
+          hint={`Passed runs out of the most recent ${lastN ?? 7} counted runs`}
         />
       )}
       <PassRateMeter

@@ -2,7 +2,6 @@ import { Label, Tooltip } from "@patternfly/react-core";
 import {
   CheckCircleIcon,
   TimesCircleIcon,
-  ExclamationTriangleIcon,
   SyncAltIcon,
   BanIcon,
   UnknownIcon,

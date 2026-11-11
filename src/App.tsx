@@ -65,7 +65,8 @@ function saveWatchlist(set: Set<string>) {
 function loadHistoryWindow(): HistoryWindow {
   try {
     const raw = localStorage.getItem(HISTORY_WINDOW_KEY);
-    return raw === "last-10" ? "last-10" : "last-30-days";
+    // Migrate older "last-10" preference to the 7-run window.
+    return raw === "last-7" || raw === "last-10" ? "last-7" : "last-30-days";
   } catch {
     return "last-30-days";
   }
@@ -448,7 +449,7 @@ function App() {
                     {" · "}
                     Runs column shows{" "}
                     <strong>
-                      {historyWindow === "last-10" ? "Last 10 Runs" : "Last 30 Days"}
+                      {historyWindow === "last-7" ? "Last 7 Runs" : "Last 30 Days"}
                     </strong>
                     {" · "}
                     Pass rate (7d / 30d) uses <strong>all runs fetched from CI</strong> — not just
