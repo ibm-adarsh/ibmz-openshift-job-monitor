@@ -38,8 +38,6 @@ interface RunSparklineProps {
   history: RunHistoryEntry[];
   /** Maximum bars to show — default 20 */
   maxRuns?: number;
-  /** Total fetched before windowing (for “showing N of M”). */
-  totalFetched?: number;
   /** Show oldest-run date on the right (newest is leftmost). */
   showAxis?: boolean;
 }
@@ -47,16 +45,12 @@ interface RunSparklineProps {
 export function RunSparkline({
   history,
   maxRuns = 20,
-  totalFetched,
   showAxis = false,
 }: RunSparklineProps) {
   // history[0] = newest; keep that order so newest is leftmost
-  const windowed = history;
-  const runs = windowed.slice(0, maxRuns);
+  const runs = history.slice(0, maxRuns);
   const newestOutcome = runs[0]?.outcome;
   const oldestDate = runs.length ? fmt(runs[runs.length - 1].startedAt) : null;
-  const shown = runs.length;
-  const total = totalFetched ?? windowed.length;
 
   return (
     <div>
@@ -125,10 +119,7 @@ export function RunSparkline({
           gap: 8,
         }}
       >
-        <span>
-          {shown < total ? `Showing ${shown} of ${total}` : `${shown} run${shown === 1 ? "" : "s"}`}
-          {" · ← newest"}
-        </span>
+        <span>← newest</span>
         {showAxis && oldestDate && <span>{oldestDate}</span>}
       </div>
     </div>

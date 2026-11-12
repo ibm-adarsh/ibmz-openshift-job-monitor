@@ -431,7 +431,6 @@ export function JobTable({
                 {job.history.length ? (
                   <RunSparkline
                     history={applyHistoryWindow(job.history, historyWindow)}
-                    totalFetched={job.historyFetchedCount}
                     showAxis
                   />
                 ) : (
