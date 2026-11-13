@@ -8,6 +8,128 @@ Data is loaded from **Sippy** and **Prow**. Job names are synced from **`openshi
 
 ---
 
+## Architecture and flow
+
+This section explains how the dashboard is built, where live data comes from, and how a user moves through the UI. No backend server is required in production — GitHub Pages serves a static React app, and the browser talks to Sippy directly.
+
+### Big picture
+
+```mermaid
+flowchart LR
+  subgraph Build["Build time (CI or local)"]
+    REL["openshift/release<br/>ci-operator configs"]
+    PY["Python inventory script<br/>scripts/regenerate-inventory.py"]
+    INV["job-inventory.json<br/>baked into the app"]
+    REL --> PY --> INV
+  end
+
+  subgraph Runtime["Runtime (browser)"]
+    UI["React + PatternFly UI<br/>Jobs · Summary · filters"]
+    SIPPY["Sippy API<br/>pass rates · run history"]
+    PROW["Prow<br/>job logs / history"]
+    ANA["CI Analyzer<br/>failed tests · phases · artifacts"]
+    UI --> SIPPY
+    UI -.->|"dev proxy only"| PROW
+    UI -->|"streak bar click"| ANA
+    UI -->|"drawer run links"| PROW
+  end
+
+  INV --> UI
+```
+
+**In one sentence:** the job *list* is fixed at build time from `openshift/release`; live *status and history* are fetched in the browser from Sippy; Prow and the CI Analyzer are used as deep links for logs and failure analysis.
+
+### Technology stack
+
+| Layer | Choice | Role |
+|-------|--------|------|
+| UI | **TypeScript**, **React 19**, **PatternFly 6** | Dashboard pages, filters, tables, drawer |
+| App shell | **Vite 8** | Dev server, production static build |
+| Inventory | **Python 3** (`regenerate-inventory.py`) | Scan release configs → `job-inventory.json` |
+| Lint / types | **oxlint**, **TypeScript** | Static checks before build |
+| Hosting | **GitHub Pages** + Actions | Static site; rebuild inventory on each deploy |
+| Live CI stats | **Sippy** (`sippy.dptools.openshift.org`) | Pass rates, run lists, last pass, flakes |
+| Job logs | **Prow** (`prow.ci.openshift.org`) | Build view / history (drawer links) |
+| Failure analysis | **CI Analyzer** (`ibm-adarsh.github.io/ci-analyzer`) | Failed tests, PRE/TEST/POST phases, leases, artifacts |
+| Job definitions | **openshift/release** | Source of truth for which periodics exist |
+
+### Where each external system is used
+
+| System | Used for | Not used for |
+|--------|----------|--------------|
+| **openshift/release** | Which IBM Z jobs to monitor (names, OCP version, category) | Live pass/fail results |
+| **Sippy** | Latest outcome, 7-run / 7-day / 30-day pass %, run sparkline data | Serving the website itself |
+| **Prow** | Opening a specific run’s deck/logs from the job drawer | Primary data source on GitHub Pages |
+| **CI Analyzer** | Opening a streak bar into failed tests, phases, timing, artifact dirs | Replacing Sippy pass-rate math |
+
+### Build-time flow (job inventory)
+
+1. Clone or refresh `openshift/release` (multiarch + hypershift configs).
+2. Run `npm run inventory` (Python) to keep only monitored IBM Z jobs (OCP 4.13–5.x).
+3. Write `src/data/job-inventory.json`.
+4. Vite builds the React app with that JSON embedded.
+5. On `main`, GitHub Actions does steps 1–4 and publishes `dist/` to Pages.
+
+```mermaid
+sequenceDiagram
+  participant Dev as Developer / Actions
+  participant Rel as openshift/release
+  participant Py as regenerate-inventory.py
+  participant Json as job-inventory.json
+  participant Vite as Vite build
+  participant Pages as GitHub Pages
+
+  Dev->>Rel: checkout main configs
+  Dev->>Py: npm run inventory
+  Py->>Json: write monitored jobs
+  Dev->>Vite: npm run build
+  Vite->>Json: import inventory
+  Vite->>Pages: upload static assets
+```
+
+### Runtime flow (live dashboard)
+
+1. User opens the static site.
+2. App loads the baked-in inventory (all monitored jobs / versions).
+3. Browser calls **Sippy** for each job’s stats and recent runs (CORS-enabled).
+4. UI hydrates rows: status, streak, last green, pass meters, run bars.
+5. In **local dev**, Vite can also proxy Prow HTML history; on Pages, Sippy is enough for the table.
+
+```mermaid
+flowchart TD
+  A[Open dashboard] --> B[Load job-inventory.json]
+  B --> C[Fetch Sippy job stats + runs]
+  C --> D[Hydrate table: status · streak · pass % · 7-run bars]
+  D --> E{User action}
+  E -->|Filters / Summary tab| F[Slice jobs by version · category · type]
+  E -->|Click job name| G[Drawer: history + Prow links]
+  E -->|Click streak bar| H[CI Analyzer execution URL]
+  E -->|CSV / copy| I[Export or clipboard helpers]
+```
+
+### User journey in the UI
+
+1. **Jobs tab** — swimlanes per OCP version; filter by homogeneous / heterogeneous / upgrade / hypershift and by test type (e2e, serial, FIPS, …).
+2. **Pass rates** — last **7 runs**, **7 days**, and **30 days** (green ≥60%, amber 40–59%, red &lt;40%).
+3. **Click job name** — drawer with previous runs and direct **Prow** links (kept as the classic CI view).
+4. **Click a streak bar** — opens that run in the **CI Analyzer** for failed tests, phase timing, leases, comparison context, and artifact links.
+5. **Summary tab** — fleet overview, heatmap, upgrade path, CSV download.
+
+### Key source files
+
+| Path | Purpose |
+|------|---------|
+| `scripts/regenerate-inventory.py` | Build-time job discovery from release configs |
+| `src/data/job-inventory.json` | Generated monitored job list |
+| `src/data/hydrateLive.ts` | Merge Sippy/Prow data into UI job models |
+| `src/api/sippyClient.ts` | Sippy HTTP client |
+| `src/api/prowClient.ts` | Prow history helper (mainly local/dev) |
+| `src/utils/links.ts` | Prow, Sippy, config, and CI Analyzer URLs |
+| `src/components/*` | PatternFly UI (table, drawer, summary, filters) |
+| `.github/workflows/deploy-pages.yml` | Inventory sync + Pages deploy |
+
+---
+
 ## Quick start (standalone repo + release clone)
 
 ### 1. Clone this repo, then pull `openshift/release` locally (gitignored)
@@ -176,4 +298,5 @@ ibmz-openshift-job-monitor/
 - [openshift/release](https://github.com/openshift/release) — CI job definitions
 - [Sippy](https://sippy.dptools.openshift.org/) — OpenShift CI analytics
 - [Prow](https://prow.ci.openshift.org/) — job run logs
+- [CI Analyzer](https://ibm-adarsh.github.io/ci-analyzer/) — failed tests, phases, leases, artifacts
 - [Live site](https://ibm-adarsh.github.io/ibmz-openshift-job-monitor/) — GitHub Pages (after Pages is enabled)
