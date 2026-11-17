@@ -208,7 +208,7 @@ npm run inventory
 Jobs for **OCP 4.13 through 5.x** (Power excluded):
 
 - **Multiarch** nightlies (`openshift-multiarch-main__nightly-*.yaml`) targeting **s390x / multi-z / libvirt-s390x**. **Heterogeneous** = `-x-xz`, `-z-zx` (Z CP + x86 workers), `-z-za` (Z + arm64), or legacy `-z-xz` / `-heterogeneous`.
-- **Hypershift / MCE** — OCP 5.0/5.1 `e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z` (formerly `virt-oz`; other hypershift Z jobs are omitted for now). `ocp-e2e-ibmcloud-ovn-multi-x-xz` is excluded on all versions.
+- **Hypershift / MCE** — OCP 5.0/5.1 `e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z` (formerly `virt-oz`; other hypershift Z jobs are omitted for now). IBM Cloud jobs `ocp-e2e-ibmcloud-ovn-multi-x-xz` and `ocp-e2e-ibmcloud-ovn-multi-s390x` are excluded on all versions.
 
 ---
 

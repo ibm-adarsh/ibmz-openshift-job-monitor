@@ -55,15 +55,6 @@
   },
   {
     "ocpVersion": "4.14",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-s390x",
-    "jobType": "e2e",
-    "category": "ibmcloud",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.14.yaml",
-    "upgradeFrom": null
-  },
-  {
-    "ocpVersion": "4.14",
     "name": "ocp-e2e-ovn-remote-libvirt-s390x",
     "jobType": "e2e",
     "category": "vpn",
@@ -106,15 +97,6 @@
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.15-upgrade-from-nightly-4.14.yaml",
     "upgradeFrom": "4.14"
-  },
-  {
-    "ocpVersion": "4.15",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-s390x",
-    "jobType": "e2e",
-    "category": "ibmcloud",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.15.yaml",
-    "upgradeFrom": null
   },
   {
     "ocpVersion": "4.15",
@@ -178,15 +160,6 @@
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.16-upgrade-from-nightly-4.15.yaml",
     "upgradeFrom": "4.15"
-  },
-  {
-    "ocpVersion": "4.16",
-    "name": "ocp-e2e-ibmcloud-ovn-multi-s390x",
-    "jobType": "e2e",
-    "category": "ibmcloud",
-    "clusterProfile": "ibmcloud-multi-s390x",
-    "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.16.yaml",
-    "upgradeFrom": null
   },
   {
     "ocpVersion": "4.16",

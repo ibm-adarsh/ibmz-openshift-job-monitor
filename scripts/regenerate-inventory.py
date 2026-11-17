@@ -175,6 +175,7 @@ HYPERSHIFT_ALLOWLIST = {
 # Multiarch jobs excluded from monitoring across all OCP versions.
 MULTIARCH_DENYLIST = {
     "ocp-e2e-ibmcloud-ovn-multi-x-xz",
+    "ocp-e2e-ibmcloud-ovn-multi-s390x",
 }
 
 
