@@ -35,7 +35,10 @@ export type DataProvenance = "live" | "partial" | "none";
 /** Where last-success timestamp came from. */
 export type LastSuccessSource = "history" | "sippy" | null;
 
-/** How much run history to show in the sparkline (display only). */
+/**
+ * Runs-column mode. `last-7` loads ~15 days of CI history (lighter default);
+ * `last-30-days` refetches up to 30 days. Sparkline always caps at 7 bars.
+ */
 export type HistoryWindow = "last-7" | "last-30-days";
 
 export interface RunHistoryEntry {

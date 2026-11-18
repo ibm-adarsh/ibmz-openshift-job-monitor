@@ -26,7 +26,13 @@ import {
 import { SyncAltIcon } from "@patternfly/react-icons";
 import "@patternfly/react-core/dist/styles/base.css";
 import { groupByVersion, loadInventoryJobs } from "./data/inventory";
-import { hydrateJobsLive, type LiveLoadProgress } from "./data/hydrateLive";
+import {
+  DEFAULT_HISTORY_DAYS,
+  EXTENDED_HISTORY_DAYS,
+  historyDaysForWindow,
+  hydrateJobsLive,
+  type LiveLoadProgress,
+} from "./data/hydrateLive";
 import { isStreakFlaking } from "./utils/stats";
 import { JobFilters, type FilterState } from "./components/JobFilters";
 import { VersionSwimlane } from "./components/VersionSwimlane";
@@ -49,7 +55,8 @@ import {
 } from "./theme";
 
 const WATCHLIST_KEY = "ibmz-watchlist-v1";
-const HISTORY_WINDOW_KEY = "ibmz-history-window-v1";
+/** v2: default is Last 7 Runs (15-day fetch); 30-day mode refetches on demand. */
+const HISTORY_WINDOW_KEY = "ibmz-history-window-v2";
 
 function loadWatchlist(): Set<string> {
   try {
@@ -65,10 +72,11 @@ function saveWatchlist(set: Set<string>) {
 function loadHistoryWindow(): HistoryWindow {
   try {
     const raw = localStorage.getItem(HISTORY_WINDOW_KEY);
-    // Migrate older "last-10" preference to the 7-run window.
-    return raw === "last-7" || raw === "last-10" ? "last-7" : "last-30-days";
+    // Default to Last 7 Runs (15-day CI fetch). Only keep 30-day mode if the user chose it.
+    if (raw === "last-30-days") return "last-30-days";
+    return "last-7";
   } catch {
-    return "last-30-days";
+    return "last-7";
   }
 }
 
@@ -137,6 +145,8 @@ function App() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  const historyDays = historyDaysForWindow(historyWindow);
+
   useEffect(() => {
     const ac = new AbortController();
     setLoading(true);
@@ -144,7 +154,7 @@ function App() {
     setProgress({ phase: "Starting…", done: 0, total: 1 });
     setJobs(inventory);
 
-    hydrateJobsLive(inventory, setProgress, ac.signal)
+    hydrateJobsLive(inventory, setProgress, ac.signal, { historyDays })
       .then((live) => {
         if (ac.signal.aborted) return;
         setJobs(live);
@@ -160,7 +170,7 @@ function App() {
       });
 
     return () => ac.abort();
-  }, [inventory, reloadKey]);
+  }, [inventory, reloadKey, historyDays]);
 
   // Keep the open drawer on the live job object after refresh/hydration.
   useEffect(() => {
@@ -452,8 +462,14 @@ function App() {
                       {historyWindow === "last-7" ? "Last 7 Runs" : "Last 30 Days"}
                     </strong>
                     {" · "}
-                    Pass rate (7d / 30d) uses <strong>all runs fetched from CI</strong> — not just
-                    what the bars show
+                    CI history fetch:{" "}
+                    <strong>
+                      {historyDays === EXTENDED_HISTORY_DAYS
+                        ? `${EXTENDED_HISTORY_DAYS} days`
+                        : `${DEFAULT_HISTORY_DAYS} days`}
+                    </strong>
+                    {" · "}
+                    Pass rate uses fetched runs (30d may show ~ until 30-day mode is selected)
                     {" · "}
                     Updated {refreshedAt.toLocaleString()}
                   </Content>
