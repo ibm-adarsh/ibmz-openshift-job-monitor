@@ -1,0 +1,15 @@
+{
+  "description": "IBM Z libvirt cluster profiles to monitor. Every sync scans all of openshift/release ci-operator/config; any test using one of these profiles (OCP 4.13–5.x) is included automatically; jobs that stop using them are dropped on the next sync.",
+  "profiles": [
+    "libvirt-s390x-vpn",
+    "libvirt-s390x-vpn-amd64",
+    "libvirt-s390x-vpn-arm64",
+    "libvirt-s390x-vpn-hcp",
+    "libvirt-s390x-vpn-ipv6",
+    "libvirt-s390x-vpn-oz"
+  ],
+  "ocpVersion": {
+    "min": "4.13",
+    "maxMajor": 5
+  }
+}

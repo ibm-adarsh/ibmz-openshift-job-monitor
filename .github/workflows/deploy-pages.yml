@@ -1,6 +1,7 @@
 # Build and publish to GitHub Pages.
 # Live CI data is fetched in the browser from Sippy (CORS allowed).
-# Job list is refreshed from openshift/release main on each deploy.
+# Job list is refreshed from openshift/release main on each deploy
+# using scripts/monitored-cluster-profiles.json (profile-driven).
 
 name: Deploy GitHub Pages
 

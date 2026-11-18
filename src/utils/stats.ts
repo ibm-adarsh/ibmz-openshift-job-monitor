@@ -72,6 +72,7 @@ export function categoryCounts(jobs: ZJob[]) {
     heterogeneous: jobs.filter((j) => j.category === "heterogeneous").length,
     upgrade: jobs.filter((j) => j.category === "upgrade").length,
     hypershift: jobs.filter((j) => j.category === "hypershift").length,
+    "add-on": jobs.filter((j) => j.category === "add-on").length,
   };
 }
 

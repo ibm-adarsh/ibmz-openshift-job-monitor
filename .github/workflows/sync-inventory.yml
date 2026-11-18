@@ -1,0 +1,100 @@
+# Daily inventory sync from openshift/release (profile-driven).
+# New/removed jobs that use monitored libvirt-s390x-vpn* profiles are
+# applied automatically — no manual job list edits.
+
+name: Sync job inventory
+
+on:
+  schedule:
+    # Every morning 07:00 India Standard Time (UTC+05:30) == 01:30 UTC
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-inventory
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monitor
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Checkout openshift/release (main)
+        uses: actions/checkout@v4
+        with:
+          repository: openshift/release
+          ref: main
+          path: release
+          fetch-depth: 1
+          sparse-checkout: |
+            ci-operator/config
+          sparse-checkout-cone-mode: true
+
+      - name: Record release SHA
+        run: |
+          echo "RELEASE_SHA=$(git -C release rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "Cloned openshift/release @ $(git -C release rev-parse --short HEAD)"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Regenerate job inventory
+        id: inventory
+        run: |
+          set -euo pipefail
+          BEFORE=$(wc -l < src/data/job-inventory.json | tr -d ' ')
+          RELEASE_ROOT="$GITHUB_WORKSPACE/release" python3 scripts/regenerate-inventory.py
+          AFTER=$(wc -l < src/data/job-inventory.json | tr -d ' ')
+          COUNT=$(python3 -c 'import json; print(len(json.load(open("src/data/job-inventory.json"))))')
+          echo "before_lines=$BEFORE" >> "$GITHUB_OUTPUT"
+          echo "after_lines=$AFTER" >> "$GITHUB_OUTPUT"
+          echo "job_count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Monitored jobs: $COUNT"
+
+      - name: Commit and push inventory if changed
+        id: publish
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/job-inventory.json
+
+          if git diff --cached --quiet; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "Inventory unchanged — nothing to publish."
+            exit 0
+          fi
+
+          SHORT="${RELEASE_SHA:0:12}"
+          COUNT="${{ steps.inventory.outputs.job_count }}"
+          git commit -m "$(cat <<EOF
+          chore: sync IBM Z job inventory from openshift/release@${SHORT}
+
+          Automatic morning full-repo profile-driven refresh (${COUNT} jobs).
+          Scans ci-operator/config; profiles: libvirt-s390x-vpn{,-amd64,-arm64,-hcp,-ipv6,-oz}.
+          EOF
+          )"
+          git push
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      - name: Write job summary
+        run: |
+          {
+            echo "## IBM Z job inventory sync"
+            echo ""
+            echo "- openshift/release: \`${RELEASE_SHA:0:12}\`"
+            echo "- monitored jobs: \`${{ steps.inventory.outputs.job_count }}\`"
+            echo "- published: \`${{ steps.publish.outputs.published }}\`"
+            echo "- schedule: daily **07:00 IST** (01:30 UTC)"
+            echo "- rule: include every job whose \`cluster_profile\` is in \`scripts/monitored-cluster-profiles.json\`"
+            echo "- site: https://ibm-adarsh.github.io/ibmz-openshift-job-monitor/"
+          } >> "$GITHUB_STEP_SUMMARY"

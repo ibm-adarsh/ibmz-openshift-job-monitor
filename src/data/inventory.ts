@@ -60,6 +60,7 @@ function toCategory(
 ): Exclude<JobCategory, "all"> {
   if (row.category === "upgrade" || row.upgradeFrom) return "upgrade";
   if (row.category === "hypershift" || row.jobType === "hypershift") return "hypershift";
+  if (row.category === "add-on" || row.jobType === "add-on") return "add-on";
   if (isHeterogeneousJobName(row.name) || row.category === "heterogeneous") {
     return "heterogeneous";
   }
@@ -76,6 +77,7 @@ function toJobType(raw: string): JobType {
     "agent",
     "techpreview",
     "hypershift",
+    "add-on",
   ];
   return (allowed.includes(raw as JobType) ? raw : "e2e") as JobType;
 }
@@ -143,7 +145,9 @@ export function loadInventoryJobs(): ZJob[] {
                 ? "z-hetero"
                 : category === "hypershift"
                   ? "z-hypershift"
-                  : "z-libvirt",
+                  : category === "add-on"
+                    ? "z-addon"
+                    : "z-libvirt",
         requiredForRelease,
         dataProvenance: "none" as const,
       };

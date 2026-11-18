@@ -4,7 +4,7 @@ Live dashboard for **IBM Z (s390x)** OpenShift CI periodic jobs — pass rates, 
 
 **Site URL:** **https://ibm-adarsh.github.io/ibmz-openshift-job-monitor/**
 
-Data is loaded from **Sippy** and **Prow**. Job names are synced from **`openshift/release`** `ci-operator` configs (main branch).
+Data is loaded from **Sippy** and **Prow**. The monitored job list is generated automatically from **`openshift/release`** by **cluster profile** (no hand-maintained job name lists).
 
 ---
 
@@ -37,7 +37,9 @@ flowchart LR
   INV --> UI
 ```
 
-**In one sentence:** the job *list* is fixed at build time from `openshift/release`; live *status and history* are fetched in the browser from Sippy; Prow and the CI Analyzer are used as deep links for logs and failure analysis.
+**In one sentence:** the job *list* is derived at build/sync time by scanning all of `openshift/release` `ci-operator/config` for jobs that use monitored `libvirt-s390x-vpn*` cluster profiles (OCP 4.13–5.x); live *status and history* are fetched in the browser from Sippy; Prow and the CI Analyzer are used as deep links for logs and failure analysis.
+
+A scheduled GitHub Action (**.github/workflows/sync-inventory.yml**) reclones `openshift/release` every morning at **07:00 IST**, regenerates `job-inventory.json`, and commits if anything changed — so new/removed jobs appear without manual edits.
 
 ### Technology stack
 
@@ -45,7 +47,9 @@ flowchart LR
 |-------|--------|------|
 | UI | **TypeScript**, **React 19**, **PatternFly 6** | Dashboard pages, filters, tables, drawer |
 | App shell | **Vite 8** | Dev server, production static build |
-| Inventory | **Python 3** (`regenerate-inventory.py`) | Scan release configs → `job-inventory.json` |
+| Inventory | **Python 3** (`regenerate-inventory.py`) | Profile-driven scan of release configs → `job-inventory.json` |
+| Profile list | `scripts/monitored-cluster-profiles.json` | Which `cluster_profile` values to follow |
+| Auto sync | **GitHub Actions** (`sync-inventory.yml`) | Daily 07:00 IST clone release + commit inventory |
 | Lint / types | **oxlint**, **TypeScript** | Static checks before build |
 | Hosting | **GitHub Pages** + Actions | Static site; rebuild inventory on each deploy |
 | Live CI stats | **Sippy** (`sippy.dptools.openshift.org`) | Pass rates, run lists, last pass, flakes |
@@ -64,8 +68,8 @@ flowchart LR
 
 ### Build-time flow (job inventory)
 
-1. Clone or refresh `openshift/release` (multiarch + hypershift configs).
-2. Run `npm run inventory` (Python) to keep only monitored IBM Z jobs (OCP 4.13–5.x).
+1. Clone or refresh `openshift/release` (`ci-operator/config` tree).
+2. Run `npm run inventory` (Python) to keep jobs whose `cluster_profile` is monitored and OCP is 4.13–5.x.
 3. Write `src/data/job-inventory.json`.
 4. Vite builds the React app with that JSON embedded.
 5. On `main`, GitHub Actions does steps 1–4 and publishes `dist/` to Pages.
@@ -119,8 +123,10 @@ flowchart TD
 
 | Path | Purpose |
 |------|---------|
-| `scripts/regenerate-inventory.py` | Build-time job discovery from release configs |
-| `src/data/job-inventory.json` | Generated monitored job list |
+| `scripts/monitored-cluster-profiles.json` | Cluster profiles to monitor (source of truth for inclusion) |
+| `scripts/regenerate-inventory.py` | Profile-driven job discovery from release configs |
+| `src/data/job-inventory.json` | Generated monitored job list (auto-updated daily) |
+| `.github/workflows/sync-inventory.yml` | Morning inventory sync + commit |
 | `src/data/hydrateLive.ts` | Merge Sippy/Prow data into UI job models |
 | `src/api/sippyClient.ts` | Sippy HTTP client |
 | `src/api/prowClient.ts` | Prow history helper (mainly local/dev) |
@@ -144,9 +150,7 @@ mkdir -p .vendor
 git clone --depth 1 --filter=blob:none --sparse \
   https://github.com/openshift/release.git .vendor/openshift-release
 cd .vendor/openshift-release
-git sparse-checkout set \
-  ci-operator/config/openshift/multiarch \
-  ci-operator/config/openshift/hypershift
+git sparse-checkout set ci-operator/config
 cd ../..
 ```
 
@@ -159,7 +163,7 @@ cd ibmz-openshift-job-monitor
 npm run setup
 ```
 
-Runs `npm install` and writes `src/data/job-inventory.json` from the release multiarch configs (OCP **4.13–5.x** IBM Z jobs only).
+Runs `npm install` and writes `src/data/job-inventory.json` from **all** `ci-operator/config` jobs that use your monitored cluster profiles (OCP **4.13–5.x**).
 
 ### 3. Run
 
@@ -205,10 +209,29 @@ npm run inventory
 
 ## What gets synced?
 
-Jobs for **OCP 4.13 through 5.x** (Power excluded):
+**Rule:** every morning (and on each Pages deploy) scan **all** of `ci-operator/config/**` in `openshift/release` and include every test whose `cluster_profile` is listed in [`scripts/monitored-cluster-profiles.json`](scripts/monitored-cluster-profiles.json), when the job’s OCP version is in range (**4.13–5.x** by default).  
+OCP version is taken from the job name, config filename, `releases:`, or related fields — so jobs outside `multiarch` / `hypershift` (for example kueue-operator on `-oz`) are included automatically. Profiles with zero jobs today (for example `libvirt-s390x-vpn-ipv6`) stay configured so they are picked up when release adds them.
 
-- **Multiarch** nightlies (`openshift-multiarch-main__nightly-*.yaml`) targeting **s390x / multi-z / libvirt-s390x**. **Heterogeneous** = `-x-xz`, `-z-zx` (Z CP + x86 workers), `-z-za` (Z + arm64), or legacy `-z-xz` / `-heterogeneous`.
-- **Hypershift / MCE** — OCP 5.0/5.1 `e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z` (formerly `virt-oz`; other hypershift Z jobs are omitted for now). IBM Cloud jobs `ocp-e2e-ibmcloud-ovn-multi-x-xz` and `ocp-e2e-ibmcloud-ovn-multi-s390x` are excluded on all versions.
+| Cluster profile | Typical jobs |
+|-----------------|--------------|
+| `libvirt-s390x-vpn` | Homogeneous e2e / serial / FIPS / image-ecosystem / agent / upgrades |
+| `libvirt-s390x-vpn-amd64` | Heterogeneous Z + x86 (`*-z-zx`, …) |
+| `libvirt-s390x-vpn-arm64` | Heterogeneous Z + arm64 (`*-z-za`, …) |
+| `libvirt-s390x-vpn-hcp` | Hypershift / MCE IBM Z periodics |
+| `libvirt-s390x-vpn-ipv6` | IPv6 libvirt Z jobs (when present) |
+| `libvirt-s390x-vpn-oz` | OZ / virt-oz style capacity pool (when present) |
+
+IBM Cloud profiles (`ibmcloud-*`) are **not** monitored. To follow an additional profile later, add its name to `scripts/monitored-cluster-profiles.json` only — no job-by-job edits.
+
+### Automatic morning sync
+
+| Trigger | Workflow |
+|---------|----------|
+| Daily **07:00 IST** (01:30 UTC) | `.github/workflows/sync-inventory.yml` |
+| Manual | Actions → **Sync job inventory** → Run workflow |
+| Every Pages deploy | `.github/workflows/deploy-pages.yml` also regenerates inventory before build |
+
+The sync job clones `openshift/release` main, runs `npm run inventory` / `regenerate-inventory.py`, and pushes `src/data/job-inventory.json` when the set of jobs changes.
 
 ---
 
@@ -285,10 +308,13 @@ ibmz-openshift-job-monitor/
   scripts/
     setup.sh
     regenerate-inventory.py
-  .github/workflows/deploy-pages.yml
+    monitored-cluster-profiles.json   # profiles to follow (edit to expand)
+  .github/workflows/
+    sync-inventory.yml                # daily 07:00 IST auto sync + commit
+    deploy-pages.yml                  # Pages build (also refreshes inventory)
   src/
-    data/job-inventory.json   # generated — commit after sync
-    components/               # React + PatternFly UI
+    data/job-inventory.json           # generated — updated by sync Action
+    components/                       # React + PatternFly UI
 ```
 
 ---

@@ -48,11 +48,16 @@ const CATEGORIES: { id: JobCategory; label: string; tip?: string }[] = [
   {
     id: "hypershift",
     label: "Hypershift",
-    tip: "Hypershift / MCE IBM Z periodics (ibmz / s390x-mgmt)",
+    tip: "Hypershift / MCE IBM Z periodics (job name contains mgmt)",
+  },
+  {
+    id: "add-on",
+    label: "Add-on",
+    tip: "Operator / add-on tests on libvirt-s390x-vpn-oz (not Hypershift mgmt)",
   },
 ];
 
-/** Tags only — upgrade / hypershift stay as category filters. */
+/** Tags only — upgrade / hypershift / add-on stay as category filters. */
 const JOB_TYPES: Array<"all" | JobType> = [
   "all",
   "e2e",

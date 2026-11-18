@@ -20,6 +20,7 @@ const CATEGORY_LABEL: Record<ZJob["category"], string> = {
   heterogeneous: "Heterogeneous",
   upgrade: "Upgrade",
   hypershift: "Hypershift",
+  "add-on": "Add-on",
 };
 
 function JobFamilyLabels({ job }: { job: ZJob }) {

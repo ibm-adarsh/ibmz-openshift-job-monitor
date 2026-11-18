@@ -122,7 +122,13 @@ export function JobDetailDrawer({ job, onClose, children }: JobDetailDrawerProps
                     isCompact
                     color={job.category === "heterogeneous" ? "purple" : "grey"}
                   >
-                    {job.category === "heterogeneous" ? "Heterogeneous" : "Homogeneous"}
+                    {job.category === "heterogeneous"
+                      ? "Heterogeneous"
+                      : job.category === "hypershift"
+                        ? "Hypershift"
+                        : job.category === "add-on"
+                          ? "Add-on"
+                          : "Homogeneous"}
                   </Label>
                 </>
               )}
