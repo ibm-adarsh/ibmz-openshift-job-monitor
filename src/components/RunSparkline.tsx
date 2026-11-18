@@ -36,7 +36,7 @@ function fmt(iso: string): string {
 
 interface RunSparklineProps {
   history: RunHistoryEntry[];
-  /** Maximum bars to show — default 20 */
+  /** Maximum bars to show — always capped at 7 (CI Analyzer links). */
   maxRuns?: number;
   /** Show oldest-run date on the right (newest is leftmost). */
   showAxis?: boolean;
@@ -44,7 +44,7 @@ interface RunSparklineProps {
 
 export function RunSparkline({
   history,
-  maxRuns = 20,
+  maxRuns = 7,
   showAxis = false,
 }: RunSparklineProps) {
   // history[0] = newest; keep that order so newest is leftmost

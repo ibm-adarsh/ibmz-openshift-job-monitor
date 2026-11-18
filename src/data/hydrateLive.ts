@@ -15,7 +15,8 @@ import {
 } from "../api/prowClient";
 
 const DAY = 86_400_000;
-const LAST_N = 7;
+/** Always show this many newest runs in the job-table streak sparkline. */
+export const LAST_N = 7;
 const SIPPY_PER_PAGE = 100;
 
 function isInFlight(outcome: RunHistoryEntry["outcome"]): boolean {
