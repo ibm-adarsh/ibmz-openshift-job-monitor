@@ -215,7 +215,7 @@ export function JobTable({
           <Tr>
             <Th screenReaderText="Watchlist" style={{ width: "2.75rem" }} />
             <Th style={{ width: "28%" }}>
-              <Tooltip content="Job name, job type, and category (homogeneous, heterogeneous, or upgrade).">
+              <Tooltip content="Job name, tag, and category (homogeneous, heterogeneous, or upgrade).">
                 <span className="ibmz-th-hint">Job</span>
               </Tooltip>
             </Th>

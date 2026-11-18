@@ -74,7 +74,7 @@ export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmap
             <FlexItem>
               <Tooltip
                 content={
-                  "Each tile shows 30-day Passed/Total % for one job type on one OCP version. " +
+                  "Each tile shows 30-day Passed/Total % for one job tag on one OCP version. " +
                   "Total includes success, fail, flake, and upgrade runs (aborted excluded). " +
                   (onFilterByVersionType ? "Click a tile to open those jobs." : "")
                 }
@@ -84,7 +84,7 @@ export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmap
             </FlexItem>
           </Flex>
           <Content component="p" className="ibmz-panel-subtitle">
-            30-day Passed/Total % by job type and OCP version. Darker green = healthier; red =
+            30-day Passed/Total % by job tag and OCP version. Darker green = healthier; red =
             needs attention.
           </Content>
           <Flex gap={{ default: "gapMd" }} flexWrap={{ default: "wrap" }} className="ibmz-legend-row">
@@ -97,11 +97,11 @@ export function HealthHeatmap({ versions, onFilterByVersionType }: HealthHeatmap
       </CardTitle>
       <CardBody className="ibmz-panel-body">
         <div className="ibmz-heatmap-scroll">
-          <table className="ibmz-heatmap-table" aria-label="30-day pass rate by job type and version">
+          <table className="ibmz-heatmap-table" aria-label="30-day pass rate by job tag and version">
             <thead>
               <tr>
                 <th className="ibmz-heatmap-sticky-col ibmz-heatmap-corner" scope="col">
-                  Job type
+                  Tag
                 </th>
                 {active.map((v) => {
                   const r = weightedPassRate(v.jobs, "30d");

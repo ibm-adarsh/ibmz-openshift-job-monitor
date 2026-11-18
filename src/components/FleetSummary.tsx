@@ -116,7 +116,7 @@ function exportCsv(jobs: ZJob[]) {
     "OCP Version",
     "Job Name",
     "Category",
-    "Job Type",
+    "Tag",
     "Last finished outcome",
     "Pass Rate 7d %",
     "Runs 7d",

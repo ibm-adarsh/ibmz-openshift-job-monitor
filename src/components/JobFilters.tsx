@@ -122,7 +122,7 @@ export function JobFilters({ filters, onChange, availableVersions }: JobFiltersP
                   isExpanded={typeOpen}
                   style={{ minWidth: 160 }}
                 >
-                  Type: {filters.jobType === "all" ? "All" : filters.jobType}
+                  Tag: {filters.jobType === "all" ? "All" : filters.jobType}
                 </MenuToggle>
               )}
             >

@@ -100,7 +100,7 @@ function exportCsv(jobs: ZJob[]) {
   const headers = [
     "OCP Version",
     "Job Name",
-    "Job Type",
+    "Tag",
     "Category",
     "Latest Outcome",
     "Latest Run At",
