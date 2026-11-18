@@ -17,7 +17,28 @@ import {
 const DAY = 86_400_000;
 /** Always show this many newest runs in the job-table streak sparkline. */
 export const LAST_N = 7;
-const SIPPY_PER_PAGE = 100;
+/** Default CI history fetch (Last 7 Runs mode) — fewer Sippy calls / lighter payload. */
+export const DEFAULT_HISTORY_DAYS = 15;
+/** Extended fetch when the user selects Last 30 Days. */
+export const EXTENDED_HISTORY_DAYS = 30;
+const SIPPY_PER_PAGE_CAP = 100;
+
+export function historyDaysForWindow(window: HistoryWindow): number {
+  return window === "last-30-days" ? EXTENDED_HISTORY_DAYS : DEFAULT_HISTORY_DAYS;
+}
+
+function sippyPageSizeForDays(days: number): number {
+  // ~2–3 runs/day headroom for daily + multi-schedule jobs; hard-capped.
+  return Math.min(SIPPY_PER_PAGE_CAP, Math.max(24, days * 3));
+}
+
+function trimHistoryToDays(runs: RunHistoryEntry[], days: number): RunHistoryEntry[] {
+  const since = Date.now() - days * DAY;
+  return runs.filter((r) => {
+    const t = new Date(r.startedAt).getTime();
+    return !Number.isNaN(t) && t >= since;
+  });
+}
 
 function isInFlight(outcome: RunHistoryEntry["outcome"]): boolean {
   return outcome === "running" || outcome === "pending";
@@ -84,7 +105,7 @@ function windowLooksComplete(runs: RunHistoryEntry[], sinceMs: number, fetchedCo
   }, Number.POSITIVE_INFINITY);
   if (!Number.isFinite(oldest)) return false;
   // Covered past the window start, or fetch was saturated so older days may exist but we tried.
-  return oldest <= sinceMs || fetchedCount >= SIPPY_PER_PAGE;
+  return oldest <= sinceMs || fetchedCount >= SIPPY_PER_PAGE_CAP;
 }
 
 function fromProw(builds: ProwBuild[], periodicName: string): RunHistoryEntry[] {
@@ -119,36 +140,36 @@ function fromSippy(runs: SippyRunRow[], periodicName: string): RunHistoryEntry[]
   });
 }
 
-/** Display helper — filter full history for sparkline without refetching. */
+/** Display helper — filter loaded history for a UI window without refetching. */
 export function applyHistoryWindow(
   history: RunHistoryEntry[],
   window: HistoryWindow,
 ): RunHistoryEntry[] {
   if (window === "last-7") return history.slice(0, LAST_N);
-  const since = Date.now() - 30 * DAY;
-  return history.filter((r) => {
-    const t = new Date(r.startedAt).getTime();
-    return !Number.isNaN(t) && t >= since;
-  });
+  return trimHistoryToDays(history, EXTENDED_HISTORY_DAYS);
 }
 
 async function loadHistory(
   job: ZJob,
+  historyDays: number,
   signal?: AbortSignal,
 ): Promise<{
   fullHistory: RunHistoryEntry[];
   source: "prow" | "sippy" | "none";
   error?: string;
+  fetchCap: number;
 }> {
   let prowErr: string | undefined;
+  const fetchCap = sippyPageSizeForDays(historyDays);
 
   if (import.meta.env.DEV) {
     try {
       const builds = await fetchProwHistory(job.periodicName, signal);
       if (builds.length) {
         return {
-          fullHistory: fromProw(builds, job.periodicName),
+          fullHistory: trimHistoryToDays(fromProw(builds, job.periodicName), historyDays),
           source: "prow",
+          fetchCap,
         };
       }
     } catch (e) {
@@ -157,17 +178,19 @@ async function loadHistory(
   }
 
   try {
-    const runs = await fetchSippyRuns(job.ocpVersion, job.periodicName, SIPPY_PER_PAGE, signal);
+    const runs = await fetchSippyRuns(job.ocpVersion, job.periodicName, fetchCap, signal);
     if (runs.length) {
       return {
-        fullHistory: fromSippy(runs, job.periodicName),
+        fullHistory: trimHistoryToDays(fromSippy(runs, job.periodicName), historyDays),
         source: "sippy",
+        fetchCap,
         error: prowErr ? `Prow proxy unavailable; using Sippy runs` : undefined,
       };
     }
     return {
       fullHistory: [],
       source: "none",
+      fetchCap,
       error: prowErr ? `Prow: ${prowErr}; Sippy: no runs` : "Sippy: no runs",
     };
   } catch (e2) {
@@ -175,6 +198,7 @@ async function loadHistory(
     return {
       fullHistory: [],
       source: "none",
+      fetchCap,
       error: prowErr ? `Prow: ${prowErr}; Sippy: ${sippyErr}` : sippyErr,
     };
   }
@@ -186,11 +210,18 @@ export interface LiveLoadProgress {
   total: number;
 }
 
+export interface HydrateOptions {
+  /** How many calendar days of run history to pull from CI (default 15). */
+  historyDays?: number;
+}
+
 export async function hydrateJobsLive(
   inventory: ZJob[],
   onProgress?: (p: LiveLoadProgress) => void,
   signal?: AbortSignal,
+  options?: HydrateOptions,
 ): Promise<ZJob[]> {
+  const historyDays = options?.historyDays ?? DEFAULT_HISTORY_DAYS;
   const versions = [...new Set(inventory.map((j) => j.ocpVersion))];
   onProgress?.({
     phase: "Fetching Sippy job stats…",
@@ -219,15 +250,19 @@ export async function hydrateJobsLive(
     });
   });
 
-  onProgress?.({ phase: "Fetching run history…", done: 0, total: inventory.length });
+  onProgress?.({
+    phase: `Fetching run history (${historyDays}d)…`,
+    done: 0,
+    total: inventory.length,
+  });
 
   let completed = 0;
   const enriched = await mapPool(inventory, 6, async (job) => {
     const sippy = sippyByRelease.get(job.ocpVersion)?.get(job.periodicName);
-    const { fullHistory, error } = await loadHistory(job, signal);
+    const { fullHistory, error, fetchCap } = await loadHistory(job, historyDays, signal);
     completed += 1;
     onProgress?.({
-      phase: "Fetching run history…",
+      phase: `Fetching run history (${historyDays}d)…`,
       done: completed,
       total: inventory.length,
     });
@@ -259,7 +294,7 @@ export async function hydrateJobsLive(
     // Confident never-passed only when Sippy aggregate says so (or no Sippy and we have deep history with zero greens).
     const neverPassed = sippy
       ? !sippy.last_pass && !historySuccessAt
-      : fullHistory.length >= SIPPY_PER_PAGE && !historySuccessAt;
+      : fullHistory.length >= fetchCap && !historySuccessAt;
     const noGreenInLoadedRuns = fullHistory.length > 0 && !historySuccessAt;
 
     const hasRuns = fullHistory.length > 0;

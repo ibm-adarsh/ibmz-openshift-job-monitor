@@ -8,8 +8,8 @@ interface HistoryWindowPickerProps {
 }
 
 /**
- * Compact inline strip that lets users switch between "last 7 runs" and
- * "last 30 days" history mode. Also shows the sparkline legend.
+ * Compact inline strip: Last 7 Runs (default 15-day CI fetch) vs Last 30 Days
+ * (refetch with 30-day history). Sparkline always shows at most 7 bars.
  */
 export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindowPickerProps) {
   return (
@@ -42,7 +42,7 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
             />
           </ToggleGroup>
           <Tooltip
-            content="Only changes the colored bars in the Runs column. 7-day and 30-day pass rates still use the full Passed/Total data fetched from Sippy/Prow (up to 100 runs per job)."
+            content="Default loads ~15 days of CI history per job. Choosing Last 30 Days refetches up to 30 days. Streak bars always show the newest 7 runs."
           >
             <span
               style={{
@@ -52,7 +52,7 @@ export function HistoryWindowPicker({ value, onChange, disabled }: HistoryWindow
                 borderBottom: "1px dotted currentColor",
               }}
             >
-              Pass rates unchanged
+              Default 15d fetch · 30d on demand
             </span>
           </Tooltip>
         </Flex>
