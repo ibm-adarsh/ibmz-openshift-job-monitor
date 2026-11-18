@@ -12,7 +12,7 @@ import { RunSparkline } from "./RunSparkline";
 import { PassRatePair } from "./PassRatePair";
 import { formatRelative } from "../utils/format";
 import { heterogeneousTopology, isHeterogeneousJobName } from "../data/inventory";
-import { applyHistoryWindow } from "../data/hydrateLive";
+import { LAST_N } from "../data/hydrateLive";
 import { displayOutcomeForRow, statusOutcomeForJob, isStreakFlaking, STREAK_FLAKE_PASS_RATE_THRESHOLD } from "../utils/stats";
 
 const CATEGORY_LABEL: Record<ZJob["category"], string> = {
@@ -240,13 +240,7 @@ export function JobTable({
               </Tooltip>
             </Th>
             <Th modifier="nowrap" style={{ width: "14rem", minWidth: "12rem" }}>
-              <Tooltip
-                content={
-                  showLastN
-                    ? "Bars for the last 7 runs — newest on the left, older on the right. Click a bar to open that run in CI Analyzer."
-                    : "Bars for runs in the last 30 days. Click a bar to open that run in CI Analyzer."
-                }
-              >
+              <Tooltip content="Always the last 7 runs — newest on the left, older on the right. Click a bar to open that run in CI Analyzer. Full history is in the job drawer.">
                 <span className="ibmz-th-hint">Runs</span>
               </Tooltip>
             </Th>
@@ -430,7 +424,8 @@ export function JobTable({
               <Td dataLabel="Runs" onClick={(e) => e.stopPropagation()}>
                 {job.history.length ? (
                   <RunSparkline
-                    history={applyHistoryWindow(job.history, historyWindow)}
+                    history={job.history}
+                    maxRuns={LAST_N}
                     showAxis
                   />
                 ) : (
