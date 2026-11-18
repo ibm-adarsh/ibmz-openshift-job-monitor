@@ -52,16 +52,15 @@ const CATEGORIES: { id: JobCategory; label: string; tip?: string }[] = [
   },
 ];
 
+/** Tags only — upgrade / hypershift stay as category filters. */
 const JOB_TYPES: Array<"all" | JobType> = [
   "all",
   "e2e",
   "serial",
   "fips",
   "image-ecosystem",
-  "upgrade",
   "agent",
   "techpreview",
-  "hypershift",
 ];
 
 const EMPTY: FilterState = {

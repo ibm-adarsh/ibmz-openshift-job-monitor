@@ -11,15 +11,14 @@ import { InfoCircleIcon } from "@patternfly/react-icons";
 import type { VersionSummary, JobType } from "../types";
 import { weightedPassRate } from "../utils/stats";
 
+/** Heatmap rows are tags only — upgrade / hypershift use category filters. */
 const TYPES: JobType[] = [
   "e2e",
   "serial",
   "fips",
   "image-ecosystem",
-  "upgrade",
   "agent",
   "techpreview",
-  "hypershift",
 ];
 
 const TYPE_LABEL: Record<JobType, string> = {
