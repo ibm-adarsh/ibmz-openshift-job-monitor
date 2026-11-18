@@ -2,8 +2,8 @@
   {
     "ocpVersion": "5.0",
     "name": "e2e",
-    "jobType": "hypershift",
-    "category": "hypershift",
+    "jobType": "add-on",
+    "category": "add-on",
     "clusterProfile": "libvirt-s390x-vpn-oz",
     "configFile": "openshift/cluster-resource-override-admission-operator/openshift-cluster-resource-override-admission-operator-main__s390x.yaml",
     "upgradeFrom": null
@@ -47,8 +47,8 @@
   {
     "ocpVersion": "4.22",
     "name": "test-e2e-4-22-downstream",
-    "jobType": "hypershift",
-    "category": "hypershift",
+    "jobType": "add-on",
+    "category": "add-on",
     "clusterProfile": "libvirt-s390x-vpn-oz",
     "configFile": "openshift/kueue-operator/openshift-kueue-operator-main__libvirt-s390x.yaml",
     "upgradeFrom": null
@@ -56,8 +56,8 @@
   {
     "ocpVersion": "4.22",
     "name": "test-e2e-4-22-upstream",
-    "jobType": "hypershift",
-    "category": "hypershift",
+    "jobType": "add-on",
+    "category": "add-on",
     "clusterProfile": "libvirt-s390x-vpn-oz",
     "configFile": "openshift/kueue-operator/openshift-kueue-operator-main__libvirt-s390x.yaml",
     "upgradeFrom": null
@@ -65,8 +65,8 @@
   {
     "ocpVersion": "4.22",
     "name": "test-e2e-4-22-downstream",
-    "jobType": "hypershift",
-    "category": "hypershift",
+    "jobType": "add-on",
+    "category": "add-on",
     "clusterProfile": "libvirt-s390x-vpn-oz",
     "configFile": "openshift/kueue-operator/openshift-kueue-operator-release-1.4__libvirt-s390x.yaml",
     "upgradeFrom": null
@@ -74,8 +74,8 @@
   {
     "ocpVersion": "4.22",
     "name": "test-e2e-4-22-upstream",
-    "jobType": "hypershift",
-    "category": "hypershift",
+    "jobType": "add-on",
+    "category": "add-on",
     "clusterProfile": "libvirt-s390x-vpn-oz",
     "configFile": "openshift/kueue-operator/openshift-kueue-operator-release-1.4__libvirt-s390x.yaml",
     "upgradeFrom": null

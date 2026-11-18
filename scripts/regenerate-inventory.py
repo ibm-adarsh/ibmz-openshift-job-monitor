@@ -193,11 +193,18 @@ def config_rel_path(release_root: Path, path: Path) -> str:
 
 
 def classify_job(job: str, profile: str, config_name: str) -> tuple[str, str, str | None]:
+    # Hypershift / MCE IBM Z periodics always include "mgmt" in the job name.
+    # Other work on -oz capacity (operators, add-ons) is tagged add-on — not hypershift.
+    is_hypershift = "mgmt" in job
+    is_addon = profile.endswith("-oz") and not is_hypershift
+
     jtype = "e2e"
     if "upgrade" in job or "upgrade" in config_name:
         jtype = "upgrade"
-    elif "hypershift" in config_name or "hcp" in profile or profile.endswith("-oz"):
+    elif is_hypershift:
         jtype = "hypershift"
+    elif is_addon:
+        jtype = "add-on"
     elif "serial" in job:
         jtype = "serial"
     elif "fips" in job:
@@ -210,9 +217,10 @@ def classify_job(job: str, profile: str, config_name: str) -> tuple[str, str, st
         jtype = "techpreview"
 
     category = "vpn"
-    # Prefer hypershift when the config or profile is HCP/OZ capacity.
-    if "hcp" in profile or profile.endswith("-oz") or "hypershift" in config_name:
+    if is_hypershift:
         category = "hypershift"
+    elif is_addon:
+        category = "add-on"
     elif (
         job.endswith("-x-xz")
         or job.endswith("-z-xz")

@@ -11,7 +11,7 @@ import { InfoCircleIcon } from "@patternfly/react-icons";
 import type { VersionSummary, JobType } from "../types";
 import { weightedPassRate } from "../utils/stats";
 
-/** Heatmap rows are tags only — upgrade / hypershift use category filters. */
+/** Heatmap rows are tags only — upgrade / hypershift / add-on use category filters. */
 const TYPES: JobType[] = [
   "e2e",
   "serial",
@@ -30,6 +30,7 @@ const TYPE_LABEL: Record<JobType, string> = {
   agent: "Agent",
   techpreview: "Tech preview",
   hypershift: "Hypershift",
+  "add-on": "Add-on",
 };
 
 const TYPE_TIP: Record<JobType, string> = {
@@ -40,7 +41,8 @@ const TYPE_TIP: Record<JobType, string> = {
   upgrade: "Version upgrade tests (also shown in upgrade path below)",
   agent: "Agent-based install tests",
   techpreview: "Tech-preview feature tests",
-  hypershift: "Hypershift / MCE IBM Z conformance and virt periodics",
+  hypershift: "Hypershift / MCE IBM Z periodics (job name contains mgmt)",
+  "add-on": "Operator / add-on tests on libvirt-s390x-vpn-oz",
 };
 
 function cellTone(passRate: number | null, hasRuns: boolean): "good" | "mid" | "low" | "empty" {

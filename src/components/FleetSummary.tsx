@@ -39,7 +39,9 @@ interface FleetSummaryProps {
   autoRefreshSecs: number;
   onAutoRefreshChange: (secs: number) => void;
   onShowFailing: () => void;
-  onShowCategory: (category: "homogeneous" | "heterogeneous" | "upgrade" | "hypershift") => void;
+  onShowCategory: (
+    category: "homogeneous" | "heterogeneous" | "upgrade" | "hypershift" | "add-on",
+  ) => void;
   onShowVersion: (version: string) => void;
   details: ReactNode;
 }
@@ -471,9 +473,16 @@ export function FleetSummary({
               <FamilyRow
                 label="Hypershift"
                 count={cats.hypershift}
-                tip="Hypershift / MCE IBM Z periodics"
+                tip="Hypershift / MCE IBM Z periodics (mgmt in job name)"
                 onClick={() => onShowCategory("hypershift")}
                 family="hypershift"
+              />
+              <FamilyRow
+                label="Add-on"
+                count={cats["add-on"]}
+                tip="Operator / add-on tests on libvirt-s390x-vpn-oz"
+                onClick={() => onShowCategory("add-on")}
+                family="addon"
               />
             </Flex>
           </div>
@@ -551,7 +560,7 @@ function FamilyRow({
   count: number;
   tip: string;
   onClick: () => void;
-  family: "homo" | "hetero" | "upgrade" | "hypershift";
+  family: "homo" | "hetero" | "upgrade" | "hypershift" | "addon";
 }) {
   return (
     <Tooltip content={`${tip} · click to filter Jobs`}>

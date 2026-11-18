@@ -17,18 +17,21 @@ export type JobType =
   | "upgrade"
   | "agent"
   | "techpreview"
-  | "hypershift";
+  | "hypershift"
+  | "add-on";
 
 /** High-level job family for filtering.
  * Heterogeneous = *-x-xz / *-z-zx / legacy *-z-xz / *-z-za / *-heterogeneous (not multi-z-z or s390x-only).
- * Hypershift IBM Z MCE periodics are tracked separately from libvirt multiarch families.
+ * Hypershift IBM Z MCE periodics (job name contains "mgmt") are tracked separately.
+ * Add-on = operator / add-on tests on libvirt-s390x-vpn-oz (not Hypershift mgmt).
  */
 export type JobCategory =
   | "all"
   | "homogeneous"
   | "heterogeneous"
   | "upgrade"
-  | "hypershift";
+  | "hypershift"
+  | "add-on";
 
 export type DataProvenance = "live" | "partial" | "none";
 
