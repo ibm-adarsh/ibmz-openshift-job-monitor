@@ -90,22 +90,84 @@ sequenceDiagram
 ### Runtime flow (live dashboard)
 
 1. User opens the static site.
-2. App loads the baked-in inventory (all monitored jobs / versions).
-3. Browser calls **Sippy** for each job’s stats and recent runs (CORS-enabled).
+2. App loads the baked-in inventory (all monitored jobs / versions) — **Sippy does not decide which jobs exist**.
+3. Browser calls **Sippy** in two phases (stats, then run history) with limited parallelism.
 4. UI hydrates rows: status, streak, last green, pass meters, run bars.
 5. In **local dev**, Vite can also proxy Prow HTML history; on Pages, Sippy is enough for the table.
 
 ```mermaid
 flowchart TD
   A[Open dashboard] --> B[Load job-inventory.json]
-  B --> C[Fetch Sippy job stats + runs]
-  C --> D[Hydrate table: status · streak · pass % · 7-run bars]
-  D --> E{User action}
-  E -->|Filters / Summary tab| F[Slice jobs by version · category · type]
-  E -->|Click job name| G[Drawer: history + Prow links]
-  E -->|Click streak bar| H[CI Analyzer execution URL]
-  E -->|CSV / copy| I[Export or clipboard helpers]
+  B --> C[Phase 1: Sippy /api/jobs per OCP version]
+  C --> D[Phase 2: Sippy /api/jobs/runs per inventory job]
+  D --> E[Hydrate table: status · streak · pass % · 7-run bars]
+  E --> F{User action}
+  F -->|Filters / Summary tab| G[Slice jobs by version · category · tag]
+  F -->|Click job name| H[Drawer: history + Prow links]
+  F -->|Click streak bar| I[CI Analyzer execution URL]
+  F -->|CSV / copy| J[Export or clipboard helpers]
 ```
+
+### How Sippy is called (simple walkthrough)
+
+Think of it like a checklist, not “Sippy discovers the world”:
+
+1. **Start from our list** — `job-inventory.json` already says which periodics to watch (from `openshift/release` + cluster profiles).
+2. **Phase 1 — job stats** — for each distinct OCP version in that list, call `/api/jobs?release=…` once. That returns Sippy’s summary numbers (last pass, recent pass %, …) for many jobs; we keep the rows that match our inventory names.
+3. **Phase 2 — run history** — for **each** inventory job, call `/api/jobs/runs` once to get recent executions for streaks and pass-rate windows.
+4. **Update the UI** — merge stats + runs into the dashboard tables.
+
+```mermaid
+flowchart TD
+  S1["1. Select OCP versions from inventory<br/>e.g. 4.22, 4.23, 5.0"] --> S2["2. Call Jobs API per version<br/>/api/jobs?release=4.22"]
+  S2 --> S3["3. Match inventory job names<br/>periodic-ci-…"]
+  S3 --> S4["4. Call Runs API per job<br/>/api/jobs/runs?release=…&filter=…"]
+  S4 --> S5["5. Update IBM Z Monitor Dashboard"]
+  style S5 fill:#e8f5e9
+```
+
+#### Example call volume (current inventory ≈ 114 jobs, 13 OCP versions)
+
+| Phase | What | Calls |
+|-------|------|------:|
+| Sippy job stats | `/api/jobs` **once per OCP version** | **13** |
+| Run history | `/api/jobs/runs` **once per inventory job** | **114** |
+| **Total** (GitHub Pages / Sippy path) | | **~127** |
+
+If you monitored 3 versions with 100 inventory jobs total: **3 + 100 = 103** calls.  
+If you had 100 jobs **on each of** 3 versions (300 rows): **3 + 300 = 303** calls.
+
+`perPage` on the runs API only changes **how many runs** come back in each response (payload size), **not** how many HTTP calls you make.
+
+#### Limited parallelism (not all at once)
+
+Calls run in **two phases**, with small worker pools (`mapPool` in `hydrateLive.ts`):
+
+| Phase | Endpoint | Parallelism |
+|-------|----------|-------------|
+| **1** | `/api/jobs` by OCP version | Up to **4** versions at a time |
+| **2** | `/api/jobs/runs` by job | Starts **after** phase 1; up to **6** jobs at a time |
+
+Phase 2 is a **flat** pool across **all** inventory jobs — not “finish version 4.22’s jobs, then 4.23’s.”  
+So: version stats (max 4) → then run history (max 6).
+
+Local **dev** may also try **Prow** history first per job, then fall back to Sippy — that can roughly double history attempts in the worst case.
+
+#### Try the same APIs in a browser
+
+**Sippy job stats** (1 call per OCP version — example 4.22):
+
+https://sippy.dptools.openshift.org/api/jobs?release=4.22
+
+**Sippy run history** (1 call per job — example kueue, lighter `perPage=45`):
+
+https://sippy.dptools.openshift.org/api/jobs/runs?release=4.22&filter=%7B%22items%22%3A%5B%7B%22columnField%22%3A%22job%22%2C%22operatorValue%22%3A%22equals%22%2C%22value%22%3A%22periodic-ci-openshift-kueue-operator-main-libvirt-s390x-test-e2e-4-22-downstream%22%7D%5D%7D&perPage=45&sortField=timestamp&sort=desc
+
+**Same job, deeper history (`perPage=90`):**
+
+https://sippy.dptools.openshift.org/api/jobs/runs?release=4.22&filter=%7B%22items%22%3A%5B%7B%22columnField%22%3A%22job%22%2C%22operatorValue%22%3A%22equals%22%2C%22value%22%3A%22periodic-ci-openshift-kueue-operator-main-libvirt-s390x-test-e2e-4-22-downstream%22%7D%5D%7D&perPage=90&sortField=timestamp&sort=desc
+
+Swap `release=4.22` for other versions (`4.23`, `5.0`, …) and change the `value` inside `filter` to any `periodic-ci-…` job name from the inventory.
 
 ### User journey in the UI
 
