@@ -80,6 +80,28 @@ function toJobType(raw: string): JobType {
   return (allowed.includes(raw as JobType) ? raw : "e2e") as JobType;
 }
 
+/**
+ * Release-gate jobs for every monitored OCP version (name variants for older
+ * s390x-only nightlies vs multi-z-z). Example OCP 5.0 periodics:
+ *   - ocp-e2e-serial-ovn-remote-libvirt-multi-z-z
+ *   - ocp-ovn-remote-libvirt-multi-z-z (upgrade)
+ *   - ocp-e2e-ovn-remote-libvirt-s390x
+ *   - ocp-fips-ovn-remote-libvirt-multi-z-z
+ */
+const RELEASE_GATE_JOB_NAMES = new Set([
+  "ocp-e2e-ovn-remote-libvirt-s390x",
+  "ocp-e2e-serial-ovn-remote-libvirt-multi-z-z",
+  "ocp-e2e-serial-ovn-remote-libvirt-s390x",
+  "ocp-ovn-remote-libvirt-multi-z-z",
+  "ocp-ovn-remote-libvirt-s390x",
+  "ocp-fips-ovn-remote-libvirt-multi-z-z",
+  "ocp-fips-ovn-remote-libvirt-s390x",
+]);
+
+export function isReleaseGateJobName(name: string): boolean {
+  return RELEASE_GATE_JOB_NAMES.has(name);
+}
+
 export function loadInventoryJobs(): ZJob[] {
   return (inventory as InventoryRow[])
     .filter((r) => isMonitoredOcpVersion(r.ocpVersion))
@@ -87,11 +109,8 @@ export function loadInventoryJobs(): ZJob[] {
       const links = buildJobLinks(row.ocpVersion, row.configFile, row.name);
       const category = toCategory(row);
       const jobType = toJobType(row.jobType);
-      // Homogeneous e2e/serial + upgrades are release gates. Heterogeneous /
-      // hypershift jobs are watched but must not alone block readiness.
-      const requiredForRelease =
-        category === "homogeneous" &&
-        ["e2e", "upgrade", "serial"].includes(jobType);
+      // Explicit gate set only — hetero / hypershift / agent / etc. never block readiness alone.
+      const requiredForRelease = isReleaseGateJobName(row.name);
       return {
         id: `${row.ocpVersion}::${row.name}::${row.configFile}`,
         name: row.name,
