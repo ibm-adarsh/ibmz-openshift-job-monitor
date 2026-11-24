@@ -713,7 +713,7 @@
   {
     "ocpVersion": "4.23",
     "name": "ocp-fips-ovn-techpreview-multi-z-z",
-    "jobType": "fips",
+    "jobType": "techpreview",
     "category": "vpn",
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-4.23.yaml",
@@ -803,7 +803,7 @@
   {
     "ocpVersion": "5.0",
     "name": "ocp-fips-ovn-techpreview-remote-libvirt-multi-z-z",
-    "jobType": "fips",
+    "jobType": "techpreview",
     "category": "vpn",
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.0.yaml",
@@ -875,7 +875,7 @@
   {
     "ocpVersion": "5.0",
     "name": "ocp-e2e-serial-ovn-techpreview-remote-libvirt-multi-z-z",
-    "jobType": "serial",
+    "jobType": "techpreview",
     "category": "vpn",
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.0.yaml",
@@ -902,7 +902,7 @@
   {
     "ocpVersion": "5.1",
     "name": "ocp-fips-ovn-techpreview-remote-libvirt-multi-z-z",
-    "jobType": "fips",
+    "jobType": "techpreview",
     "category": "vpn",
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.1.yaml",
@@ -1001,7 +1001,7 @@
   {
     "ocpVersion": "5.1",
     "name": "ocp-e2e-serial-ovn-techpreview-remote-libvirt-multi-z-z",
-    "jobType": "serial",
+    "jobType": "techpreview",
     "category": "vpn",
     "clusterProfile": "libvirt-s390x-vpn",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.1.yaml",

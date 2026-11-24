@@ -66,7 +66,9 @@ function toCategory(
   return "homogeneous";
 }
 
-function toJobType(raw: string): JobType {
+function toJobType(row: InventoryRow): JobType {
+  // Name wins: serial/fips techpreview nightlies must show Tag = techpreview.
+  if (row.name.toLowerCase().includes("techpreview")) return "techpreview";
   const allowed: JobType[] = [
     "e2e",
     "serial",
@@ -77,7 +79,7 @@ function toJobType(raw: string): JobType {
     "techpreview",
     "hypershift",
   ];
-  return (allowed.includes(raw as JobType) ? raw : "e2e") as JobType;
+  return (allowed.includes(row.jobType as JobType) ? row.jobType : "e2e") as JobType;
 }
 
 /**
@@ -110,7 +112,7 @@ export function loadInventoryJobs(): ZJob[] {
     .map((row) => {
       const links = buildJobLinks(row.ocpVersion, row.configFile, row.name);
       const category = toCategory(row);
-      const jobType = toJobType(row.jobType);
+      const jobType = toJobType(row);
       // Explicit gate set only — hetero / hypershift / agent / etc. never block readiness alone.
       const requiredForRelease = isReleaseGateJobName(row.name);
       return {

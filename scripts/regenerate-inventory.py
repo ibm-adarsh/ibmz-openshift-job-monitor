@@ -81,6 +81,8 @@ def classify_multiarch_job(job: str, profile: str, config_name: str) -> tuple[st
     jtype = "e2e"
     if "upgrade" in job or "upgrade" in config_name:
         jtype = "upgrade"
+    elif "techpreview" in job:
+        jtype = "techpreview"
     elif "serial" in job:
         jtype = "serial"
     elif "fips" in job:
@@ -89,8 +91,6 @@ def classify_multiarch_job(job: str, profile: str, config_name: str) -> tuple[st
         jtype = "image-ecosystem"
     elif "agent" in job:
         jtype = "agent"
-    elif "techpreview" in job:
-        jtype = "techpreview"
 
     category = "old-profile"
     if (
