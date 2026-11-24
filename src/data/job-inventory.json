@@ -1036,6 +1036,15 @@
   },
   {
     "ocpVersion": "5.1",
+    "name": "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-extinfra-z-z",
+    "jobType": "hypershift",
+    "category": "hypershift",
+    "clusterProfile": "libvirt-s390x-vpn-hcp",
+    "configFile": "openshift/hypershift/openshift-hypershift-release-5.1__periodics-mce.yaml",
+    "upgradeFrom": null
+  },
+  {
+    "ocpVersion": "5.1",
     "name": "e2e-ibmz-multi-mgmt-ovn-conformance-hcpmulti-z-zx",
     "jobType": "hypershift",
     "category": "hypershift",

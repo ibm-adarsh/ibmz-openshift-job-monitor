@@ -170,6 +170,7 @@ def collect_multiarch_jobs(multiarch: Path) -> list[dict]:
 HYPERSHIFT_ALLOWLIST = {
     ("5.0", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z"),
     ("5.1", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z"),
+    ("5.1", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-extinfra-z-z"),
     ("5.1", "e2e-ibmz-multi-mgmt-ovn-conformance-hcpmulti-z-zx"),
 }
 
