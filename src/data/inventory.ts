@@ -87,11 +87,13 @@ function toJobType(raw: string): JobType {
  *   - ocp-ovn-remote-libvirt-multi-z-z (upgrade)
  *   - ocp-e2e-ovn-remote-libvirt-s390x
  *   - ocp-fips-ovn-remote-libvirt-multi-z-z
+ *   - ocp-e2e-serial-ovn-techpreview-remote-libvirt-multi-z-z (when present)
  */
 const RELEASE_GATE_JOB_NAMES = new Set([
   "ocp-e2e-ovn-remote-libvirt-s390x",
   "ocp-e2e-serial-ovn-remote-libvirt-multi-z-z",
   "ocp-e2e-serial-ovn-remote-libvirt-s390x",
+  "ocp-e2e-serial-ovn-techpreview-remote-libvirt-multi-z-z",
   "ocp-ovn-remote-libvirt-multi-z-z",
   "ocp-ovn-remote-libvirt-s390x",
   "ocp-fips-ovn-remote-libvirt-multi-z-z",

@@ -198,7 +198,7 @@ export function JobFilters({ filters, onChange, availableVersions }: JobFiltersP
             </Tooltip>
           </ToolbarItem>
           <ToolbarItem>
-            <Tooltip content="Release gates: e2e s390x, serial multi-z-z (or legacy s390x), upgrade multi-z-z (or legacy s390x), and fips multi-z-z (or legacy s390x) on each OCP version.">
+            <Tooltip content="Release gates: e2e s390x, serial multi-z-z (or legacy s390x), upgrade multi-z-z (or legacy s390x), fips multi-z-z (or legacy s390x), and serial techpreview multi-z-z when present on an OCP version.">
               <Checkbox
                 id="required-only"
                 label="Release gates only"
