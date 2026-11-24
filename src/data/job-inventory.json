@@ -958,7 +958,7 @@
     "name": "ocp-e2e-ovn-remote-libvirt-multi-z-zx",
     "jobType": "e2e",
     "category": "heterogeneous",
-    "clusterProfile": "libvirt-s390x-amd64",
+    "clusterProfile": "libvirt-s390x-vpn-amd64",
     "configFile": "openshift/multiarch/openshift-multiarch-main__nightly-5.1.yaml",
     "upgradeFrom": null
   },
@@ -1031,6 +1031,15 @@
     "jobType": "hypershift",
     "category": "hypershift",
     "clusterProfile": "libvirt-s390x-vpn-hcp",
+    "configFile": "openshift/hypershift/openshift-hypershift-release-5.1__periodics-mce.yaml",
+    "upgradeFrom": null
+  },
+  {
+    "ocpVersion": "5.1",
+    "name": "e2e-ibmz-multi-mgmt-ovn-conformance-hcpmulti-z-zx",
+    "jobType": "hypershift",
+    "category": "hypershift",
+    "clusterProfile": "libvirt-s390x-vpn-amd64",
     "configFile": "openshift/hypershift/openshift-hypershift-release-5.1__periodics-mce.yaml",
     "upgradeFrom": null
   }

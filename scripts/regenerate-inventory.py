@@ -166,10 +166,11 @@ def collect_multiarch_jobs(multiarch: Path) -> list[dict]:
     return jobs
 
 
-# Hypershift virt-z-z periodics (formerly virt-oz) on current OCP 5.x.
+# Hypershift IBM Z periodics on current OCP 5.x (mgmt / virt / hcpmulti).
 HYPERSHIFT_ALLOWLIST = {
     ("5.0", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z"),
     ("5.1", "e2e-ibmz-s390x-mgmt-ovn-conformance-virt-z-z"),
+    ("5.1", "e2e-ibmz-multi-mgmt-ovn-conformance-hcpmulti-z-zx"),
 }
 
 # Multiarch jobs excluded from monitoring across all OCP versions.
