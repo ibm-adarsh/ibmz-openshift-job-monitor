@@ -90,6 +90,7 @@ function toJobType(row: InventoryRow): JobType {
  *   - ocp-e2e-ovn-remote-libvirt-s390x
  *   - ocp-fips-ovn-remote-libvirt-multi-z-z
  *   - ocp-e2e-serial-ovn-techpreview-remote-libvirt-multi-z-z (when present)
+ *   - ocp-fips-ovn-techpreview-remote-libvirt-multi-z-z (when present)
  */
 const RELEASE_GATE_JOB_NAMES = new Set([
   "ocp-e2e-ovn-remote-libvirt-s390x",
@@ -100,6 +101,8 @@ const RELEASE_GATE_JOB_NAMES = new Set([
   "ocp-ovn-remote-libvirt-s390x",
   "ocp-fips-ovn-remote-libvirt-multi-z-z",
   "ocp-fips-ovn-remote-libvirt-s390x",
+  "ocp-fips-ovn-techpreview-multi-z-z",
+  "ocp-fips-ovn-techpreview-remote-libvirt-multi-z-z",
 ]);
 
 export function isReleaseGateJobName(name: string): boolean {
